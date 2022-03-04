@@ -15,7 +15,7 @@ import time
 
 STAT_GAP = 1000
 #TOTAL_EPISODE = 50 * STAT_GAP
-TOTAL_ITER = 100
+TOTAL_ITER = 10
 
 
 def Batch(isTrain : bool):
@@ -24,6 +24,7 @@ def Batch(isTrain : bool):
     for episode in range(1, STAT_GAP + 1):
         observation = env.reset()
         # one trial
+        #for _ in range(100):
         while True:
             action = RL.choose_action(observation) if isTrain else RL.action(observation)
             observation_, reward, done, info = env.step(action)
@@ -36,13 +37,13 @@ def Batch(isTrain : bool):
 
             if done:
                 if reward == ARRIVE_REWARD:
-                    len = len(env.cur_path)
-                    path_len.append(len)
+                    lenth = len(env.cur_path)
+                    path_len.append(lenth)
                     if env.new_sln:
-                        info = "path length:{}".format(len)
+                        info = "path length:{}".format(lenth)
                         for n in env.cur_path:
                            info = ("{}->{}".format(info, str(n)))
-                        print("episode{} {}".format(episode, info))
+                        print("episode{}-{} {}".format('t' if isTrain else 'F', episode, info))
                 break
             DQN_step += 1
         # enf of while(one trial)
@@ -52,19 +53,27 @@ def Batch(isTrain : bool):
 def core():
     suc_rate = [] # 成功率
     avr_len = [] # 平均长度
+    x = []
 
-    for _ in range(TOTAL_ITER):
+    for i in range(TOTAL_ITER):
         train = Batch(isTrain = True)
 
         test = Batch(isTrain = False)
+        print('iteration{}, {} successes'.format(i, len(test)))
         suc_rate.append(len(test) / STAT_GAP)
         avr_len.append(sum(test) / STAT_GAP)
+        x.append(i)
 
-    RL.plot_cost()
-    fig, ax = plt.subplots(1, 2)
+    #RL.plot_cost()
+    fig = plt.figure()
+    ax = fig.subplots(1, 2)
 
-    ax[0][0].plot(list(1, 1 + STAT_GAP), suc_rate)
-    ax[0][1].plot(list(1, 1 + STAT_GAP), avr_len)
+    ax[0].plot(x, suc_rate, 'r')
+    ax[1].plot(x, avr_len, 'b')
+
+    #ax[1][0].plot(x, suc_rate, 'r.')
+    #ax[1][1].plot(x, avr_len, 'b')
+
 
     plt.tight_layout()
     plt.plot()
@@ -76,7 +85,7 @@ def display_old(endpoints, x, suc, avr_len, suc_len):
     print(endpoints)
     RL.plot_cost()
 
-    fig, ax = plt.subplots(2, 2)
+    fig, ax = plt.subplots(2)
     # 成功率
     ax[0][0].plot(x, suc[0], 'r-')
     ax[0][0].plot(x, suc[1], 'b-')
