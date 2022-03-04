@@ -1,8 +1,6 @@
 
 import sys
 
-from cv2 import batchDistance
-from grpc import ssl_server_certificate_configuration
 sys.path.append('..')
 
 from Maze.unrenderedmaze import *
@@ -22,7 +20,7 @@ TOTAL_ITER = 100
 
 def Batch(isTrain : bool):
     path_len = [] # 记录成功时的路径长度
-    DQN_step = 0
+    DQN_step = 1
     for episode in range(1, STAT_GAP + 1):
         observation = env.reset()
         # one trial
@@ -59,14 +57,18 @@ def core():
         train = Batch(isTrain = True)
 
         test = Batch(isTrain = False)
-        suc_rate.appen(len(suc_rate) / STAT_GAP)
+        suc_rate.append(len(test) / STAT_GAP)
         avr_len.append(sum(test) / STAT_GAP)
 
+    RL.plot_cost()
+    fig, ax = plt.subplots(1, 2)
 
+    ax[0][0].plot(list(1, 1 + STAT_GAP), suc_rate)
+    ax[0][1].plot(list(1, 1 + STAT_GAP), avr_len)
 
-def display(path_len):
-
-    pass
+    plt.tight_layout()
+    plt.plot()
+    plt.show()
 
 
 def display_old(endpoints, x, suc, avr_len, suc_len):
@@ -104,7 +106,7 @@ if __name__ == '__main__':
     env = GymMaze() if rendered else UnrenderedMaze()
     RL = DeepQNetwork(len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.5)
     print("begin at ", time.ctime())
-
+    core()
     print("finish at ", time.ctime())
 
 
