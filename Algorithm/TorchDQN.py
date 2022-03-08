@@ -88,21 +88,22 @@ class DeepQNetwork():
         observation = torch.Tensor(observation[np.newaxis, :])
         actions_value = self.q_eval(observation)
         action = np.argmax(actions_value.data.numpy())
+        self.random_action = False
         return action
 
     def learn(self):
-        if self.memory_counter < self.batch_size:
-            return
         # check to replace target parameters
         if self.learn_step_counter % self.replace_target_iter == 0:
             self.q_target.load_state_dict(self.q_eval.state_dict())
             #print("\ntarget params replaced\n")
 
         # sample batch memory from all memory
-        if self.memory_counter > self.memory_size:
-            sample_index = np.random.choice(self.memory_size, size=self.batch_size, replace=False)
-        else:
-            sample_index = np.random.choice(self.memory_counter, size=self.batch_size, replace=False)
+        #if self.memory_counter > self.memory_size:
+        #    sample_index = np.random.choice(self.memory_size, size=self.batch_size)#, replace=False)
+        #else:
+        #    sample_index = np.random.choice(self.memory_counter, size=self.batch_size)#, replace=False)
+        total_size = min(self.memory_counter, self.memory_size)
+        sample_index = np.random.choice(total_size, size = self.batch_size, replace = True)
         batch_memory = self.memory[sample_index, :]
 
         # q_next is used for getting which action would be choosed by target network in state s_(t+1)

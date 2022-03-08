@@ -64,7 +64,7 @@ def core():
         train_len.append(sum(train) / TRAIN_GAP)
 
         test = Batch(isTrain = False)
-        print('iteration{}, {} successes'.format(i, len(test)))
+        print('iteration{} {}, {} successes'.format(i, time.ctime(), len(test)))
         test_rate.append(len(test) / TEST_GAP)
         test_len.append(sum(test) / TEST_GAP)
         x.append(i)
