@@ -13,15 +13,16 @@ import argparse
 from Common.dmdp_actions import *
 import time
 
-STAT_GAP = 1000
-#TOTAL_EPISODE = 50 * STAT_GAP
-TOTAL_ITER = 10
+TRAIN_GAP = 1000
+TEST_GAP = 100
+TOTAL_ITER = 100
 
 
 def Batch(isTrain : bool):
     path_len = [] # 记录成功时的路径长度
     DQN_step = 1
-    for episode in range(1, STAT_GAP + 1):
+    gap = TRAIN_GAP if isTrain else TEST_GAP
+    for episode in range(1, gap + 1):
         observation = env.reset()
         # one trial
         #for _ in range(100):
@@ -43,7 +44,7 @@ def Batch(isTrain : bool):
                         info = "path length:{}".format(lenth)
                         for n in env.cur_path:
                            info = ("{}->{}".format(info, str(n)))
-                        print("episode{}-{} {}".format('t' if isTrain else 'F', episode, info))
+                        print("episode-{}{} {}".format('t' if isTrain else 'f', episode, info))
                 break
             DQN_step += 1
         # enf of while(one trial)
@@ -51,29 +52,32 @@ def Batch(isTrain : bool):
     return path_len
 
 def core():
-    suc_rate = [] # 成功率
-    avr_len = [] # 平均长度
     x = []
+    test_rate = [] # 成功率
+    test_len = [] # 平均长度
+    train_rate = []
+    train_len = []
 
     for i in range(TOTAL_ITER):
         train = Batch(isTrain = True)
+        train_rate.append(len(train) / TRAIN_GAP)
+        train_len.append(sum(train) / TRAIN_GAP)
 
         test = Batch(isTrain = False)
         print('iteration{}, {} successes'.format(i, len(test)))
-        suc_rate.append(len(test) / STAT_GAP)
-        avr_len.append(sum(test) / STAT_GAP)
+        test_rate.append(len(test) / TEST_GAP)
+        test_len.append(sum(test) / TEST_GAP)
         x.append(i)
 
     #RL.plot_cost()
-    fig = plt.figure()
-    ax = fig.subplots(1, 2)
+    fig = plt.figure(figsize = (10, 10))
+    ax = fig.subplots(2, 2)
 
-    ax[0].plot(x, suc_rate, 'r')
-    ax[1].plot(x, avr_len, 'b')
+    ax[0, 0].plot(x, test_rate, 'r')
+    ax[0, 1].plot(x, test_len, 'r')
 
-    #ax[1][0].plot(x, suc_rate, 'r.')
-    #ax[1][1].plot(x, avr_len, 'b')
-
+    ax[1, 0].plot(x, train_rate, 'b')
+    ax[1, 1].plot(x, train_len, 'b')
 
     plt.tight_layout()
     plt.plot()
