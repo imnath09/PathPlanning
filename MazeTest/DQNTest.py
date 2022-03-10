@@ -18,10 +18,9 @@ TEST_GAP = 100
 TOTAL_ITER = 100
 
 
-def Batch(isTrain : bool):
+def Batch(isTrain : bool, gap = 200, flag = True):
     path_len = [] # 记录成功时的路径长度
     DQN_step = 1
-    gap = TRAIN_GAP if isTrain else TEST_GAP
     for episode in range(1, gap + 1):
         observation = env.reset()
         # one trial
@@ -31,7 +30,7 @@ def Batch(isTrain : bool):
             observation_, reward, done, info = env.step(action)
             if isTrain:
                 RL.store_transition(observation, action, reward, observation_) # , done)
-                if True: # (DQN_step > 500) and (DQN_step % 5 == 0):
+                if flag:# (DQN_step > 200): and (DQN_step % 5 == 0):实际没必要填充200次，也没必要隔五次训练
                     RL.learn()
             observation = observation_
             env.render()
@@ -52,6 +51,8 @@ def Batch(isTrain : bool):
     return path_len
 
 def core():
+    #Batch(isTrain=True, flag = False)#起始训练填充200次，起始没必要
+
     x = []
     test_rate = [] # 成功率
     test_len = [] # 平均长度
@@ -59,17 +60,16 @@ def core():
     train_len = []
 
     for i in range(TOTAL_ITER):
-        train = Batch(isTrain = True)
+        train = Batch(isTrain = True, gap = TRAIN_GAP)
         train_rate.append(len(train) / TRAIN_GAP)
         train_len.append(sum(train) / TRAIN_GAP)
 
-        test = Batch(isTrain = False)
+        test = Batch(isTrain = False, gap = TEST_GAP)
         print('iteration{} {}, {} successes'.format(i, time.ctime(), len(test)))
         test_rate.append(len(test) / TEST_GAP)
         test_len.append(sum(test) / TEST_GAP)
         x.append(i)
 
-    #RL.plot_cost()
     fig = plt.figure(figsize = (10, 10))
     ax = fig.subplots(2, 2)
 
@@ -82,33 +82,7 @@ def core():
     plt.tight_layout()
     plt.plot()
     plt.show()
-
-
-def display_old(endpoints, x, suc, avr_len, suc_len):
-    print('game over', time.ctime())
-    print(endpoints)
     RL.plot_cost()
-
-    fig, ax = plt.subplots(2)
-    # 成功率
-    ax[0][0].plot(x, suc[0], 'r-')
-    ax[0][0].plot(x, suc[1], 'b-')
-
-    # 平均路径长度
-    ax[0][1].plot(x, avr_len[0], 'r-')
-    ax[0][1].plot(x, avr_len[1], 'b-')
-
-    # 寻路情况
-    ax[1][0].plot(suc_len[0][0], suc_len[0][1], 'r.', linewidth = 0.10)
-    ax[1][0].plot(suc_len[1][0], suc_len[1][1], 'b.', linewidth = 0.10)
-
-    # 终点热力图
-    #endpoints[3][3] /= 8
-    ax[1][1].imshow(endpoints, cmap = 'gray')
-
-    plt.tight_layout()
-    plt.plot()
-    plt.show()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
