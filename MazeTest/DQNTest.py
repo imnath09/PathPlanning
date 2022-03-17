@@ -13,12 +13,7 @@ import argparse
 from Common.dmdp_actions import *
 import time
 
-TRAIN_GAP = 1000
-TEST_GAP = 10
-TOTAL_ITER = 10000
-
-
-def Batch(isTrain : bool, gap = 200, flag = True):
+def Batch(isTrain, gap, flag):
     path_len = [] # 记录成功时的路径长度
     DQN_step = 1
     for episode in range(1, gap + 1):
@@ -50,42 +45,50 @@ def Batch(isTrain : bool, gap = 200, flag = True):
     # enf of for(trial process)
     return path_len
 
-def core():
-    #Batch(isTrain=True, flag = False)#起始训练填充200次，起始没必要
-
+def core(test_gap, train_gap, total_iter, cons):
+    #Batch(isTrain=True, gap=200, flag = False)#起始训练填充200次，起始没必要
     x = []
     test_rate = [] # 成功率
     test_len = [] # 平均长度
     train_rate = []
     train_len = []
-    print("begin at ", time.ctime())
-    for i in range(TOTAL_ITER):
-        train = Batch(isTrain = True, gap = TRAIN_GAP, flag = False)
-        train_rate.append(len(train) / TRAIN_GAP)
-        train_len.append(sum(train) / TRAIN_GAP)
+    starttime = get_time()
+    count = 0
+    print('start', get_time())
+    for i in range(1, 1 + total_iter):
+        train = Batch(isTrain = True, gap = train_gap, flag = cons)
+        train_rate.append(len(train) / train_gap)
+        train_len.append(sum(train) / train_gap)
 
-        test = Batch(isTrain = False, gap = TEST_GAP, flag = False)
-        if len(test) < TEST_GAP:
-            print('iteration{} {}, {} successes'.format(i, time.ctime(), len(test)))
-        test_rate.append(len(test) / TEST_GAP)
-        test_len.append(sum(test) / TEST_GAP)
+        test = Batch(isTrain = False, gap = test_gap, flag = cons)
+        if len(test) < test_gap:
+            count += 1
+            #print('iteration{} {}, {} successes'.format(i, get_time(), len(test)))
+        if i % 100 == 0:
+            print('iter{} {}, {} failed'.format(i, get_time(), count))
+            count = 0
+        test_rate.append(len(test) / test_gap)
+        test_len.append(sum(test) / test_gap)
         x.append(i)
-    print("finish at ", time.ctime())
+    endtime = get_time()
+    info = 'from {} to {} testgap{} train{} iter{} cons{}'.format(
+        starttime, endtime, test_gap, train_gap, total_iter, cons)
+    print(info)
 
-    fig = plt.figure(figsize = (10, 10))
-    fig.suptitle('title')
+    fig = plt.figure(figsize = (15, 10))
+    fig.suptitle(info)
     ax = fig.subplots(2, 2)
 
     ax[0, 0].plot(x, test_rate, 'r-')
     ax[0, 0].set_ylabel('test success rate')
-    ax[0, 0].set_xlabel('training iteration')
+    ax[0, 0].set_xlabel('test iteration')
 
-    ax[0, 1].plot(x, test_len, 'r.')
+    ax[0, 1].plot(x, test_len, 'r-')
     ax[0, 1].set_ylabel('average lenth')
-    ax[0, 1].set_xlabel('training iteration')
+    ax[0, 1].set_xlabel('test iteration')
 
     ax[1, 0].plot(x, train_rate, 'b')
-    ax[1, 0].set_ylabel('test success rate')
+    ax[1, 0].set_ylabel('train success rate')
     ax[1, 0].set_xlabel('training iteration')
 
     ax[1, 1].plot(np.arange(len(RL.cost_his)), RL.cost_his)
@@ -96,16 +99,26 @@ def core():
     plt.plot()
     plt.show()
 
+def get_time():
+    return time.strftime('%m-%d %H:%M:%S', time.localtime())
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--render', action = 'store_true', help = 'render or not')
+    parser.add_argument('--testgap', type=int, default=10)
+    parser.add_argument('--traingap', type=int, default=1000)
+    parser.add_argument('--iter', type=int, default=1000)
+    parser.add_argument('--cons', type=bool, default=False)
     args = parser.parse_args()
-    rendered = args.render
 
+    test_gap = args.testgap
+    train_gap = args.traingap
+    total_iter = args.iter
+    cons = args.cons
+    rendered = args.render
     env = GymMaze() if rendered else UnrenderedMaze()
     RL = DeepQNetwork(len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.5)
-    core()
+    core(test_gap, train_gap, total_iter, cons)
 
 
 
