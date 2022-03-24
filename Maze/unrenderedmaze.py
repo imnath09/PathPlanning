@@ -1,29 +1,19 @@
 import numpy as np
 import sys
-
-'''
-if sys.version_info.major == 2:
-    import Tkinter as tk
-else:
-    import tkinter as tk
-'''
 sys.path.append('..')
+
+from .InitMap import *
 from Common.dmdp_actions import *
 
-PIXEL = 50
-MAZE_HEIGHT = 8
-MAZE_WIDTH = 8
+PIXEL = 30
 OUT = 'out of bound'
 CRASH = 'collision'
 
 ARRIVE_REWARD = 10.0
 CRASH_REWARD = -1.0
-STEP_REWARD = -0.01
+STEP_REWARD = -0.001
 
 END_IF_OUT = False # 出界时是否结束训练
-
-START = np.array([0, 0]) # 起始点
-DESTINATION = np.array([2, 2]) # 终点
 
 '''
 REWARD = np.array(
@@ -47,23 +37,16 @@ class UnrenderedMaze():
         self.observation_space_n = 2
         self.new_sln = False
 
-        self.walker = START
-        self.obstacles = [
-            np.array([2, 1]),
-            np.array([1, 2]),
-            np.array([2, 6]),
-            np.array([6, 2]),
-            np.array([4, 4]),
-            np.array([4, 1]),#4 1
-            #np.array([1, 3]),
-            np.array([2, 4]),#2 4
-            #np.array([3, 2]),#3 2
-        ]
+        self.map = InitMap()
+        self.walker = self.map.start
+        self.obstacles = self.map.obstacles
+        self.height = self.map.height
+        self.width = self.map.width
 
         #print(REWARD)
 
     def reset(self):
-        self.walker = START
+        self.walker = self.map.start
         self.cur_path = []
         return self.walker
 
@@ -75,10 +58,11 @@ class UnrenderedMaze():
         # 出界
         if (next[0] < 0 or
             next[1] < 0 or
-            next[0] >= MAZE_HEIGHT or
-            next[1] >= MAZE_WIDTH):
+            next[0] >= self.height or
+            next[1] >= self.width):
             reward = CRASH_REWARD
             done = END_IF_OUT # 出界是否结束
+            #print(OUT)
             if not END_IF_OUT:
                 next = self.walker # 出界不结束就回退
             info = OUT
@@ -88,7 +72,7 @@ class UnrenderedMaze():
             done = True
             info = CRASH
         # 抵达终点
-        elif (next == DESTINATION).all():
+        elif (next == self.map.destination).all():
             reward = ARRIVE_REWARD
             #print('daoda{}'.format(reward))
             done = True

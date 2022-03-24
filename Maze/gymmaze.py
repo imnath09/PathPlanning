@@ -1,10 +1,12 @@
 
-import time
+
+import sys
+sys.path.append('..')
+
 from Maze.unrenderedmaze import *
+
 import gym
-
 from gym.envs.classic_control import rendering
-
 
 class GymMaze(gym.Env, UnrenderedMaze):
     def __init__(self):
@@ -12,14 +14,14 @@ class GymMaze(gym.Env, UnrenderedMaze):
         UnrenderedMaze.__init__(self)
         self.path_polygon = []
 
-        self.viewer = rendering.Viewer(MAZE_WIDTH * PIXEL, MAZE_HEIGHT * PIXEL)
+        self.viewer = rendering.Viewer(self.height * PIXEL, self.width * PIXEL)
         # 画线
-        for i in range(MAZE_HEIGHT + 1):
-            line = rendering.Line((0, PIXEL * i), (PIXEL * MAZE_WIDTH, PIXEL * i))
+        for i in range(self.width + 1):
+            line = rendering.Line((0, PIXEL * i), (PIXEL * self.height, PIXEL * i))
             line.set_color(0, 0, 0)
             self.viewer.add_geom(line)
-        for i in range(MAZE_WIDTH + 1):
-            line = rendering.Line((PIXEL * i, 0), (PIXEL * i, PIXEL * MAZE_HEIGHT))
+        for i in range(self.height + 1):
+            line = rendering.Line((PIXEL * i, 0), (PIXEL * i, PIXEL * self.width))
             line.set_color(0, 0, 0)
             self.viewer.add_geom(line)
         # 画障碍
@@ -27,19 +29,21 @@ class GymMaze(gym.Env, UnrenderedMaze):
             pl = self.draw_shape(o)
             self.viewer.add_geom(pl)
         # 起点
-        start = self.draw_shape(START, color = (0, 0, 1), shape = 'circle')
+        start = self.draw_shape(self.map.start, color = (0, 0, 1), shape = 'circle')
         self.viewer.add_geom(start)
         # 终点
-        dest = self.draw_shape(DESTINATION, color = (1, 0, 0))
+        dest = self.draw_shape(self.map.destination, color = (1, 0, 0))
         self.viewer.add_geom(dest)
         # 智能体
         self.agent_trans = rendering.Transform()
+        p = (self.walker + (0.5, 0.5)) * PIXEL
+        self.agent_trans.set_translation(p[0], p[1])
         self.agent = self.draw_shape(
             self.walker,
-            self.agent_trans,
-            (1, 1, 0),
-            'circle',
-            0.3)
+            trans = self.agent_trans,
+            color = (1, 1, 0),
+            shape = 'circle',
+            radius = 0.3)
         self.viewer.add_geom(self.agent)
 
         self.viewer.render()
@@ -95,3 +99,19 @@ class GymMaze(gym.Env, UnrenderedMaze):
         pl.add_attr(trans)
         return pl
 
+if __name__ == '__main__':
+    env = GymMaze()
+    action = 0
+    while True:
+        di = input('actions:')
+        if di == 'w':
+            action = 0
+        elif di == 's':
+            action = 1
+        elif di == 'a':
+            action = 2
+        elif di == 'd':
+            action = 3
+
+        env.step(action)
+        env.render()

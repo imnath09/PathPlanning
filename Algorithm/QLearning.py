@@ -21,6 +21,13 @@ class QLearningTable:
             self.random_action = True
         return action
 
+    def action(self, observation):
+        self.check_state_exist(observation)
+        state_action = self.q_table.loc[observation,:]
+        action = np.random.choice(state_action[state_action==np.max(state_action)].index)
+        self.random_action = False
+        return action
+
     def learn(self, s, a, r, s_, done):
         self.check_state_exist(s_)
         q_predict = self.q_table.loc[s, a]

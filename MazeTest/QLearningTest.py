@@ -2,117 +2,104 @@
 import sys
 sys.path.append('..')
 
+from Algorithm.QLearning import QLearningTable
 from Maze.unrenderedmaze import *
 from Maze.gymmaze import GymMaze
-from Algorithm.QLearning import QLearningTable
 
 import matplotlib.pyplot as plt
 import argparse
+
+from Common.dmdp_actions import *
 import time
-import numpy as np
 
-STAT_GAP = 1000
-TOTAL_EPISODE = 10 * STAT_GAP
-
-x = []
-c = []
-def run():
-    suc_matrix = np.array([[0, 0],[0, 0]]) # 幕抵达矩阵
-    suc = [[], []] # 成功率
-
-    t_len = np.array([0, 0]) # 平均长度
-    avr_len = [[], []] # 
-
-    x = []
-    endpoints = np.zeros((MAZE_HEIGHT + 2, MAZE_WIDTH + 2), dtype = int)
-
-    suc_length = [[[], []], [[], []]] # 路径长度
-
-    DQN_step = 0
-
-    for episode in range(1, TOTAL_EPISODE + 1):
+def Batch(isTrain, gap, flag):
+    path_len = [] # 记录成功时的路径长度
+    DQN_step = 1
+    for episode in range(1, gap + 1):
         observation = env.reset()
-        explore = False
-
-        while True:
-
-            action = RL.choose_action(encode(observation))
+        # one trial
+        for _ in range(500):
+        #while True:
+            action = RL.choose_action(encode(observation)) if isTrain else RL.action(encode(observation))
             observation_, reward, done, info = env.step(action)
             RL.learn(encode(observation), action, reward, encode(observation_), done)
             observation = observation_
-
             env.render()
-            explore |= RL.random_action
-            if done:
-                endpoints[tuple(observation + [1, 1])] += 1
-                i = 0 if explore else 1 # 0是探索，1是利用
-                suc_matrix[i][0] += 1 # 总次数 探索/利用
-                suc_length[i][0].append(episode)
-
-                if reward == ARRIVE_REWARD: # 抵达目的地
-                    suc_matrix[i][1] += 1 # 成功次数 探索/利用
-                    suc_length[i][1].append(env.cur_path.__len__()) # 路径长度 探索/利用
-                    t_len[i] += env.cur_path.__len__()
-
-                    if env.new_sln:
-                        info = "path length:{}".format(env.cur_path.__len__())
-                        for n in env.cur_path:
-                           info = ("{}->{}".format(info, str(n)))
-                        print("episode{} {}".format(episode, info))
-                else: # 没有抵达目的地
-                    suc_length[i][1].append(0)
-                break
             DQN_step += 1
 
-        if episode % STAT_GAP == 0:
-            if suc_matrix[0][0] == 0 or suc_matrix[0][0] == STAT_GAP:
-                print('{} {}'.format(episode, suc_matrix[0][0]))
-                continue
-            c0 = round(suc_matrix[0][1] / suc_matrix[0][0], 4) # 探索成功率
-            c1 = round(suc_matrix[1][1] / suc_matrix[1][0], 4) # 利用成功率
-            suc[0].append(c0)
-            suc[1].append(c1)
+            if done:
+                if reward == ARRIVE_REWARD:
+                    lenth = len(env.cur_path)
+                    path_len.append(lenth)
+                    if env.new_sln:
+                        info = "path length:{}".format(lenth)
+                        for n in env.cur_path:
+                           info = ("{}->{}".format(info, str(n)))
+                        print("episode-{}{} {}".format('t' if isTrain else 'f', episode, info))
+                break
+        # enf of while(one trial)
+    # enf of for(trial process)
+    return path_len
 
-            al0 = 0 if t_len[0] == 0 else round(t_len[0] / suc_matrix[0][1], 4) # 探索平均长度
-            al1 = 0 if t_len[1] == 0 else round(t_len[1] / suc_matrix[1][1], 4) # 利用平均长度
-            avr_len[0].append(al0)
-            avr_len[1].append(al1)
+def core(test_gap, train_gap, total_iter, cons):
+    #Batch(isTrain=True, gap=200, flag = False)#起始训练填充200次，起始没必要
+    x = []
+    test_rate = [] # 成功率
+    test_len = [] # 平均长度
+    train_rate = []
+    train_len = []
+    starttime = get_time()
+    count = 0
+    print('start', get_time())
+    for i in range(1, 1 + total_iter):
+        train = Batch(isTrain = True, gap = train_gap, flag = cons)
+        train_rate.append(len(train) / train_gap)
+        train_len.append(sum(train) / train_gap)
 
-            x.append(episode)
+        test = Batch(isTrain = False, gap = test_gap, flag = cons)
+        if len(test) < test_gap:
+            count += 1
+            #print('iteration{} {}, {} successes'.format(i, get_time(), len(test)))
+        if i % 10 == 0:
+            print('iter{} {}, {} failed'.format(i, get_time(), count))
+            count = 0
+        test_rate.append(len(test) / test_gap)
+        test_len.append(sum(test) / test_gap)
+        x.append(i)
+    endtime = get_time()
+    info = 'from {} to {} testgap{} train{} iter{} cons{}'.format(
+        starttime, endtime, test_gap, train_gap, total_iter, cons)
+    print(info)
 
-            if True:
-                print("eps:{}; explore:{}/{}={}, len:{}; exploit:{}/{}={}, len:{};".format(
-                episode,
-                suc_matrix[0][1], suc_matrix[0][0], c0, al0,
-                suc_matrix[1][1], suc_matrix[1][0], c1, al1))
+    fig = plt.figure(figsize = (15, 10))
+    fig.suptitle(info)
+    ax = fig.subplots(2, 2)
 
-            suc_matrix *= 0
-            t_len *= 0
+    ax[0, 0].plot(x, test_rate, 'r-')
+    ax[0, 0].set_ylabel('test success rate')
+    ax[0, 0].set_xlabel('test iteration')
 
-    print(endpoints)
-    show_table(RL.q_table)
-    print('game over', time.ctime())
+    ax[0, 1].plot(x, test_len, 'r-')
+    ax[0, 1].set_ylabel('average length')
+    ax[0, 1].set_xlabel('test iteration')
 
-    fig, ax = plt.subplots(2, 2)
-    # 成功率
-    ax[0][0].plot(x, suc[0], 'r-')
-    ax[0][0].plot(x, suc[1], 'b-')
+    ax[1, 0].plot(x, train_rate, 'b')
+    ax[1, 0].set_ylabel('train success rate')
+    ax[1, 0].set_xlabel('training iteration')
 
-    # 平均路径长度
-    ax[0][1].plot(x, avr_len[0], 'r-')
-    ax[0][1].plot(x, avr_len[1], 'b-')
-
-    # 寻路情况
-    ax[1][0].plot(suc_length[0][0], suc_length[0][1], 'r.', linewidth = 0.10)
-    ax[1][0].plot(suc_length[1][0], suc_length[1][1], 'b.', linewidth = 0.10)
-
-    # 终点热力图
-    #endpoints[3][3] /= 8
-    ax[1][1].imshow(endpoints, cmap = 'gray')
+    #ax[1, 1].plot(np.arange(len(RL.cost_his)), RL.cost_his)
+    ax[1, 1].plot(x, train_len, 'b')
+    ax[1, 1].set_ylabel('average length')
+    ax[1, 1].set_xlabel('training steps')
 
     plt.tight_layout()
     plt.plot()
-    plt.show()
+    plt.savefig('../img/{}.png'.format(get_time()))
+    #plt.show()
+    plt.close('all')
+
+def get_time():
+    return time.strftime('%m-%d %H.%M.%S', time.localtime())
 
 def encode(pos):
     r = '{},{}'.format(pos[0], pos[1])
@@ -125,21 +112,22 @@ def decode(index):
     l = np.array(l)
     return l
 
-def show_table(table):
-    ntbl = np.full((MAZE_HEIGHT + 2, MAZE_WIDTH + 2), actions.stop.name)
-    for r in table.index:
-        pos = decode(r)
-        s = table.loc[r]
-        c = np.random.choice(s[s==np.max(s)].index)
-        content = actions(c).name.ljust(5, ' ')
-        ntbl[tuple(pos + [1, 1])] = content
-    print(ntbl)
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--render', action = 'store_true', help = 'render or not')
+    parser.add_argument('--testgap', type=int, default=10)
+    parser.add_argument('--traingap', type=int, default=100)
+    parser.add_argument('--iter', type=int, default=500)
+    parser.add_argument('--cons', type=bool, default=True)
     args = parser.parse_args()
+
+    test_gap = args.testgap
+    train_gap = args.traingap
+    total_iter = args.iter
+    cons = args.cons
     rendered = args.render
     env = GymMaze() if rendered else UnrenderedMaze()
     RL = QLearningTable(actions=env.action_space)
-    run()
+    core(test_gap, train_gap, total_iter, cons)
+
+

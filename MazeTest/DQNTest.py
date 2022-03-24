@@ -29,18 +29,18 @@ def Batch(isTrain, gap, flag):
                     RL.learn()
             observation = observation_
             env.render()
+            DQN_step += 1
 
             if done:
                 if reward == ARRIVE_REWARD:
-                    lenth = len(env.cur_path)
-                    path_len.append(lenth)
+                    length = len(env.cur_path)
+                    path_len.append(length)
                     if env.new_sln:
-                        info = "path length:{}".format(lenth)
+                        info = "path length:{}".format(length)
                         for n in env.cur_path:
                            info = ("{}->{}".format(info, str(n)))
                         print("episode-{}{} {}".format('t' if isTrain else 'f', episode, info))
                 break
-            DQN_step += 1
         # enf of while(one trial)
     # enf of for(trial process)
     return path_len
@@ -84,7 +84,7 @@ def core(test_gap, train_gap, total_iter, cons):
     ax[0, 0].set_xlabel('test iteration')
 
     ax[0, 1].plot(x, test_len, 'r-')
-    ax[0, 1].set_ylabel('average lenth')
+    ax[0, 1].set_ylabel('average length')
     ax[0, 1].set_xlabel('test iteration')
 
     ax[1, 0].plot(x, train_rate, 'b')
@@ -97,10 +97,12 @@ def core(test_gap, train_gap, total_iter, cons):
 
     plt.tight_layout()
     plt.plot()
-    plt.show()
+    plt.savefig('../img/{}.png'.format(get_time()))
+    #plt.show()
+    plt.close('all')
 
 def get_time():
-    return time.strftime('%m-%d %H:%M:%S', time.localtime())
+    return time.strftime('%m-%d %H.%M.%S', time.localtime())
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -108,7 +110,7 @@ if __name__ == '__main__':
     parser.add_argument('--testgap', type=int, default=10)
     parser.add_argument('--traingap', type=int, default=1000)
     parser.add_argument('--iter', type=int, default=1000)
-    parser.add_argument('--cons', type=bool, default=False)
+    parser.add_argument('--cons', type=bool, default=True)
     args = parser.parse_args()
 
     test_gap = args.testgap

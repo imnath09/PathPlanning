@@ -32,7 +32,7 @@ def Test(mode):
     avr_len = [[], []] # 
 
     x = []
-    endpoints = np.zeros((MAZE_HEIGHT + 2, MAZE_WIDTH + 2), dtype = int)
+    endpoints = np.zeros((env.height + 2, env.width + 2), dtype = int)
 
     suc_length = [[[], []], [[], []]] # 路径长度
 
@@ -146,7 +146,7 @@ def Test(mode):
 
 
 def show_table(table):
-    ntbl = np.full((MAZE_HEIGHT + 2, MAZE_WIDTH + 2), actions.stop.name)
+    ntbl = np.full((env.height + 2, env.width + 2), actions.stop.name)
     for r in table.index:
         pos = decode(r)
         s = table.loc[r]
@@ -169,12 +169,12 @@ def decode(index):
 def encode1(pos):
     i = (pos + [1, 1])[0]
     j = (pos + [1, 1])[1]
-    r = i * (MAZE_WIDTH + 2) + j
+    r = i * (env.width + 2) + j
     return r
 
 def decode1(index):
-    j = index % (MAZE_WIDTH + 2)
-    i = int(index / (MAZE_WIDTH + 2))
+    j = index % (env.width + 2)
+    i = int(index / (env.width + 2))
     return np.array([i - 1, j- 1])
 
 if __name__ == '__main__':
