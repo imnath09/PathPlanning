@@ -8,6 +8,7 @@ from Common.dmdp_actions import *
 PIXEL = 30
 OUT = 'out of bound'
 CRASH = 'collision'
+ARRIVE = 'arrive'
 
 ARRIVE_REWARD = 10.0
 CRASH_REWARD = -1.0
@@ -76,6 +77,7 @@ class UnrenderedMaze():
             reward = ARRIVE_REWARD
             #print('daoda{}'.format(reward))
             done = True
+            info = ARRIVE
 
             if (len(self.cur_path) < len(self.s_path) or
                 self.s_path.__len__() == 0):

@@ -12,6 +12,8 @@ from Algorithm.Sarsa import SarsaLambdaTable
 from Algorithm.QLearning import QLearningTable
 from Algorithm.TorchDQN import DeepQNetwork
 
+from HZJ.dabeijing import *
+
 import matplotlib.pyplot as plt
 import argparse
 
@@ -19,8 +21,8 @@ from Common.dmdp_actions import *
 import time
 import gym
 
-STAT_GAP = 1000
-TOTAL_EPISODE = 20 * STAT_GAP
+STAT_GAP = 100
+TOTAL_EPISODE = 200 * STAT_GAP
 
 
 
@@ -75,14 +77,15 @@ def Test(mode):
                 suc_matrix[i][0] += 1 # 总次数 探索/利用
                 suc_length[i][0].append(episode)
 
-                if reward == ARRIVE_REWARD: # 抵达目的地
+                if info == ARRIVE: # 抵达目的地
                     suc_matrix[i][1] += 1 # 成功次数 探索/利用
-                    suc_length[i][1].append(env.cur_path.__len__()) # 路径长度 探索/利用
-                    t_len[i] += env.cur_path.__len__()
+                    cpath = env.d # env.cur_path #
+                    suc_length[i][1].append(len(cpath)) # 路径长度 探索/利用
+                    t_len[i] += len(cpath)
 
                     if env.new_sln:
-                        info = "path length:{}".format(env.cur_path.__len__())
-                        for n in env.cur_path:
+                        info = "path length:{}".format(len(cpath))
+                        for n in cpath:
                            info = ("{}->{}".format(info, str(n)))
                         print("episode{} {}".format(episode, info))
                 else: # 没有抵达目的地
@@ -187,9 +190,10 @@ if __name__ == '__main__':
     rendered = args.render
     mode = args.mode
     env = GymMaze() if rendered else UnrenderedMaze()
+    env = Environment()
     RL = SarsaLambdaTable(actions=env.action_space) if mode == 0 else (
         QLearningTable(actions=env.action_space) if mode == 1 else
-        DeepQNetwork(len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.5)
+        DeepQNetwork(len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.9)
         )
     print(type(RL))
     Test(mode)
