@@ -21,8 +21,8 @@ from Common.dmdp_actions import *
 import time
 import gym
 
-STAT_GAP = 100
-TOTAL_EPISODE = 200 * STAT_GAP
+STAT_GAP = 10
+TOTAL_EPISODE = 100 * STAT_GAP
 
 
 
@@ -79,7 +79,7 @@ def Test(mode):
 
                 if info == ARRIVE: # 抵达目的地
                     suc_matrix[i][1] += 1 # 成功次数 探索/利用
-                    cpath = env.d # env.cur_path #
+                    cpath = env.cur_path # env.d #
                     suc_length[i][1].append(len(cpath)) # 路径长度 探索/利用
                     t_len[i] += len(cpath)
 
@@ -118,33 +118,48 @@ def Test(mode):
             t_len *= 0
 
     print(endpoints)
-    if not mode == 2:
-        show_table(RL.q_table)
-    else:
-        pass
-        #RL.plot_cost()
     print('game over', time.ctime())
 
-    fig, ax = plt.subplots(2, 2)
+    fig = plt.figure(figsize = (15,10))
+    ax = fig.subplots(2, 2)
     # 成功率
-    ax[0][0].plot(x, suc[0], 'r-')
-    ax[0][0].plot(x, suc[1], 'b-')
+    ax[0][0].plot(x, suc[0], 'r-', label = '探索成功率')
+    ax[0][0].plot(x, suc[1], 'b-', label = '利用成功率')
+    ax[0][0].set_ylabel('success rate')
+    ax[0][0].set_xlabel('episode')
+    ax[0][0].legend()
 
     # 平均路径长度
-    ax[0][1].plot(x, avr_len[0], 'r-')
-    ax[0][1].plot(x, avr_len[1], 'b-')
+    ax[0][1].plot(x, avr_len[0], 'r-', label = '探索长度')
+    ax[0][1].plot(x, avr_len[1], 'b-', label = '利用长度')
+    ax[0][1].set_ylabel('average length')
+    ax[0][1].set_xlabel('episode')
+    ax[0][1].legend()
 
     # 寻路情况
-    ax[1][0].plot(suc_length[0][0], suc_length[0][1], 'r.', linewidth = 0.10)
-    ax[1][0].plot(suc_length[1][0], suc_length[1][1], 'b.', linewidth = 0.10)
+    ax[1][0].plot(suc_length[0][0], suc_length[0][1], 'r.', linewidth = 0.10, label = '探索长度')
+    ax[1][0].plot(suc_length[1][0], suc_length[1][1], 'b.', linewidth = 0.10, label = '利用长度')
+    ax[1][0].set_ylabel('path length')
+    ax[1][0].set_xlabel('episode')
+    ax[1][0].legend()
 
     # 终点热力图
     #endpoints[3][3] /= 8
     ax[1][1].imshow(endpoints, cmap = 'gray')
 
+    plt.rcParams['font.sans-serif']=['SimHei'] #显示中文标签
+    plt.rcParams['axes.unicode_minus']=False
     plt.tight_layout()
-    plt.plot()
-    plt.show()
+    #plt.show()
+    plt.savefig('../img/{}.png'.format(get_time()))
+    plt.close('all')
+    if mode == 0 or mode ==1:
+        show_table(RL.q_table)
+    else:
+        RL.plot_cost()
+
+def get_time():
+    return time.strftime('%m-%d %H.%M.%S', time.localtime())
 
 
 
@@ -190,7 +205,7 @@ if __name__ == '__main__':
     rendered = args.render
     mode = args.mode
     env = GymMaze() if rendered else UnrenderedMaze()
-    env = Environment()
+    #env = Environment()
     RL = SarsaLambdaTable(actions=env.action_space) if mode == 0 else (
         QLearningTable(actions=env.action_space) if mode == 1 else
         DeepQNetwork(len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.9)

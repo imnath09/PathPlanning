@@ -12,7 +12,7 @@ ARRIVE = 'arrive'
 
 ARRIVE_REWARD = 10.0
 CRASH_REWARD = -1.0
-STEP_REWARD = -0.001
+STEP_REWARD = -0.001 # 实际使用cosine
 
 END_IF_OUT = False # 出界时是否结束训练
 
@@ -98,7 +98,23 @@ class UnrenderedMaze():
                 #    info = ("{}->{}".format(info, str(c)))
         # 移动
         else:
-            reward = STEP_REWARD#REWARD[tuple(next)]#
+            #reward = STEP_REWARD#REWARD[tuple(next)]#
+            '''
+            a:walker->next
+            b:walker->destination
+            c:next->destination
+            cosine->a**2 + b**2 - c**2 / 2ab
+            '''
+            a2 = (self.walker[0] - next[0])**2 + (self.walker[1] - next[1])**2
+            b2 = (self.walker[0] - self.map.destination[0])**2 + (self.walker[1] - self.map.destination[1])**2
+            c2 = (self.map.destination[0] - next[0])**2 + (self.map.destination[1] - next[1])**2
+            if a2 == 0 or b2 == 0:
+                cosine = 0
+            else:
+                cosine = (a2 + b2 - c2) / (2 * (a2 * b2)**0.5)
+            reward = cosine
+            #print('cos=', cosine)
+
             done = False
 
         self.walker = next

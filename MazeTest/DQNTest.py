@@ -19,8 +19,8 @@ def Batch(isTrain, gap, flag):
     for episode in range(1, gap + 1):
         observation = env.reset()
         # one trial
-        for _ in range(500):
-        #while True:
+        #for _ in range(500):
+        while True:
             action = RL.choose_action(observation) if isTrain else RL.action(observation)
             observation_, reward, done, info = env.step(action)
             if isTrain:
@@ -32,7 +32,10 @@ def Batch(isTrain, gap, flag):
             DQN_step += 1
 
             if done:
-                if reward == ARRIVE_REWARD:
+                if not isTrain:
+                    endpoints[tuple(observation + [1, 1])] += 1
+
+                if info == ARRIVE:
                     length = len(env.cur_path)
                     path_len.append(length)
                     if env.new_sln:
@@ -54,21 +57,23 @@ def core(test_gap, train_gap, total_iter, cons):
     train_len = []
     starttime = get_time()
     count = 0
-    print('start', get_time())
+    print('start', starttime)
     for i in range(1, 1 + total_iter):
         train = Batch(isTrain = True, gap = train_gap, flag = cons)
         train_rate.append(len(train) / train_gap)
-        train_len.append(sum(train) / train_gap)
+        arvlen = sum(train) / len(train) if len(train) > 0 else 0
+        train_len.append(arvlen)
 
         test = Batch(isTrain = False, gap = test_gap, flag = cons)
         if len(test) < test_gap:
             count += 1
             #print('iteration{} {}, {} successes'.format(i, get_time(), len(test)))
-        if i % 100 == 0:
+        if i % 10 == 0:
             print('iter{} {}, {} failed'.format(i, get_time(), count))
             count = 0
         test_rate.append(len(test) / test_gap)
-        test_len.append(sum(test) / test_gap)
+        arvlen = sum(test) / len(test) if len(test) > 0 else 0
+        test_len.append(arvlen)
         x.append(i)
     endtime = get_time()
     info = 'from {} to {} testgap{} train{} iter{} cons{}'.format(
@@ -79,24 +84,28 @@ def core(test_gap, train_gap, total_iter, cons):
     fig.suptitle(info)
     ax = fig.subplots(2, 2)
 
-    ax[0, 0].plot(x, test_rate, 'r-')
-    ax[0, 0].set_ylabel('test success rate')
-    ax[0, 0].set_xlabel('test iteration')
+    ax[0, 0].plot(x, test_rate, 'r-', label = 'test rate')
+    ax[0, 0].plot(x, train_rate, 'b-', label = 'train rate')
+    ax[0, 0].set_ylabel('success rate,')
+    ax[0, 0].set_xlabel('iteration')
+    ax[0, 0].legend()
 
-    ax[0, 1].plot(x, test_len, 'r-')
+    ax[0, 1].plot(x, test_len, 'r-', label = 'test length')
+    ax[0, 1].plot(x, train_len, 'b-', label = 'train length')
     ax[0, 1].set_ylabel('average length')
-    ax[0, 1].set_xlabel('test iteration')
+    ax[0, 1].set_xlabel('iteration')
+    ax[0, 1].legend()
 
-    ax[1, 0].plot(x, train_rate, 'b')
-    ax[1, 0].set_ylabel('train success rate')
-    ax[1, 0].set_xlabel('training iteration')
+    ax[1, 0].plot(endpoints, cmap = 'gray')
 
     ax[1, 1].plot(np.arange(len(RL.cost_his)), RL.cost_his)
     ax[1, 1].set_ylabel('Cost')
     ax[1, 1].set_xlabel('training steps')
+    #ax[1, 1].legend()
 
+    plt.rcParams['font.sans-serif']=['SimHei'] #显示中文标签
+    plt.rcParams['axes.unicode_minus']=False
     plt.tight_layout()
-    plt.plot()
     plt.savefig('../img/{}.png'.format(get_time()))
     #plt.show()
     plt.close('all')
@@ -119,7 +128,10 @@ if __name__ == '__main__':
     cons = args.cons
     rendered = args.render
     env = GymMaze() if rendered else UnrenderedMaze()
-    RL = DeepQNetwork(len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.5)
+    RL = DeepQNetwork(len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.9)
+
+    endpoints = np.zeros((env.height + 2, env.width + 2), dtype = int)
+
     core(test_gap, train_gap, total_iter, cons)
 
 
