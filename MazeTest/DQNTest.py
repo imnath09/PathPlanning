@@ -70,9 +70,8 @@ def core(test_gap, train_gap, total_iter):
         if i % 100 == 0:
             print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
 
-    endtime = get_time()
-    info = 'from {} to {} testgap{} train{} iter{}'.format(
-        starttime, endtime, test_gap, train_gap, total_iter)
+    info = 'DQNTest{}to{}test{}train{}iter{}'.format(
+        starttime, get_time(), test_gap, train_gap, total_iter)
     print(info)
     print(endpoints)
     display(info, test_rate, train_rate, test_len, train_len, '-')
@@ -127,10 +126,5 @@ if __name__ == '__main__':
     rendered = args.render
     env = GymMaze() if rendered else UnrenderedMaze()
     agent = DeepQNetwork(len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.9)
-
     endpoints = np.zeros((env.height + 2, env.width + 2), dtype = int)
-
     core(test_gap, train_gap, total_iter)
-
-
-

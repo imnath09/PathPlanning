@@ -21,8 +21,8 @@ from Common.dmdp_actions import *
 import time
 import gym
 
-STAT_GAP = 10
-TOTAL_EPISODE = 100 * STAT_GAP
+STAT_GAP = 1000
+ITER = 1000
 
 
 
@@ -33,44 +33,42 @@ def Test(mode):
     t_len = np.array([0, 0]) # 平均长度
     avr_len = [[], []] # 
 
-    x = []
-    endpoints = np.zeros((env.height + 2, env.width + 2), dtype = int)
-
     suc_length = [[[], []], [[], []]] # 路径长度
 
     DQN_step = 0
 
-    print(time.ctime())
-    for episode in range(1, TOTAL_EPISODE + 1):
+    starttime = get_time()
+    print('start', starttime)
+    for episode in range(1, ITER * STAT_GAP + 1):
         observation = env.reset()
         explore = False # 探索
 
         if mode == 0: # sarsa
-            action = RL.choose_action(encode(observation))
-            RL.eligibility_trace *= 0
+            action = agent.choose_action(encode(observation))
+            agent.eligibility_trace *= 0
 
         while True:
             if mode == 0: # 0:sarsa
                 observation_, reward, done, info = env.step(action)
-                action_ = RL.choose_action(encode(observation_))
-                RL.learn(encode(observation), action, reward, encode(observation_), action_, done)
+                action_ = agent.choose_action(encode(observation_))
+                agent.learn(encode(observation), action, reward, encode(observation_), action_, done)
                 observation = observation_
                 action = action_
             elif mode == 1: # 1:QLearning
-                action = RL.choose_action(encode(observation))
+                action = agent.choose_action(encode(observation))
                 observation_, reward, done, info = env.step(action)
-                RL.learn(encode(observation), action, reward, encode(observation_), done)
+                agent.learn(encode(observation), action, reward, encode(observation_), done)
                 observation = observation_
             else: # 2:DQN
-                action = RL.choose_action(observation)
+                action = agent.choose_action(observation)
                 observation_, reward, done, info = env.step(action)
-                RL.store_transition(observation, action, reward, observation_)#, done)
+                agent.store_transition(observation, action, reward, observation_)#, done)
                 if (DQN_step > 200) and (DQN_step % 5==0):
-                    RL.learn()
+                    agent.learn()
                 observation = observation_
 
             env.render()
-            explore |= RL.random_action
+            explore |= agent.random_action
             DQN_step += 1
             if done:
                 if not explore:
@@ -107,8 +105,6 @@ def Test(mode):
             avr_len[0].append(al0)
             avr_len[1].append(al1)
 
-            x.append(episode)
-
             if True:
                 print("eps:{}; explore:{}/{}={}, len:{}; exploit:{}/{}={}, len:{};".format(
                 episode,
@@ -118,10 +114,15 @@ def Test(mode):
             suc_matrix *= 0
             t_len *= 0
 
+    info = 'QTable{}to{}gap{}iter{}'.format(starttime, get_time(), STAT_GAP, ITER)
+    print(info)
     print(endpoints)
-    print('game over', time.ctime())
+    display(info, suc, avr_len, suc_length,)
 
+def display(info, suc, avr_len, suc_length):
+    x = range(1, 1 + ITER)
     fig = plt.figure(figsize = (15,10))
+    fig.suptitle(info)
     ax = fig.subplots(2, 2)
     # 成功率
     ax[0][0].plot(x, suc[0], 'r-', label = 'train rate')
@@ -155,14 +156,12 @@ def Test(mode):
     plt.savefig('../img/{}.png'.format(get_time()))
     plt.close('all')
     if mode == 0 or mode ==1:
-        show_table(RL.q_table)
+        show_table(agent.q_table)
     else:
-        RL.plot_cost()
+        agent.plot_cost()
 
 def get_time():
     return time.strftime('%m-%d %H.%M.%S', time.localtime())
-
-
 
 def show_table(table):
     ntbl = np.full((env.height + 2, env.width + 2), actions.stop.name)
@@ -203,15 +202,15 @@ if __name__ == '__main__':
         '--mode', type = int,choices = [0, 1, 2],
         help = '0:sarsa, 1:q learning, 2:DQN')
     args = parser.parse_args()
+
     rendered = args.render
     mode = args.mode
     env = GymMaze() if rendered else UnrenderedMaze()
     #env = Environment()
-    RL = SarsaLambdaTable(actions=env.action_space) if mode == 0 else (
+    agent = SarsaLambdaTable(actions=env.action_space) if mode == 0 else (
         QLearningTable(actions=env.action_space) if mode == 1 else
         DeepQNetwork(len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.9)
         )
-    print(type(RL))
+    print(type(agent))
+    endpoints = np.zeros((env.height + 2, env.width + 2), dtype = int)
     Test(mode)
-
-
