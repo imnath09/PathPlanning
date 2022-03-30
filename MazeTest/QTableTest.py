@@ -71,8 +71,10 @@ def Test(mode):
 
             env.render()
             explore |= RL.random_action
+            DQN_step += 1
             if done:
-                endpoints[tuple(observation + [1, 1])] += 1
+                if not explore:
+                    endpoints[tuple(observation + [1, 1])] += 1
                 i = 0 if explore else 1 # 0是探索，1是利用
                 suc_matrix[i][0] += 1 # 总次数 探索/利用
                 suc_length[i][0].append(episode)
@@ -91,7 +93,6 @@ def Test(mode):
                 else: # 没有抵达目的地
                     suc_length[i][1].append(0)
                 break
-            DQN_step += 1
 
         if episode % STAT_GAP == 0:
             # 探索成功率
@@ -123,22 +124,22 @@ def Test(mode):
     fig = plt.figure(figsize = (15,10))
     ax = fig.subplots(2, 2)
     # 成功率
-    ax[0][0].plot(x, suc[0], 'r-', label = '探索成功率')
-    ax[0][0].plot(x, suc[1], 'b-', label = '利用成功率')
+    ax[0][0].plot(x, suc[0], 'r-', label = 'train rate')
+    ax[0][0].plot(x, suc[1], 'b-', label = 'test rate')
     ax[0][0].set_ylabel('success rate')
     ax[0][0].set_xlabel('episode')
     ax[0][0].legend()
 
     # 平均路径长度
-    ax[0][1].plot(x, avr_len[0], 'r-', label = '探索长度')
-    ax[0][1].plot(x, avr_len[1], 'b-', label = '利用长度')
+    ax[0][1].plot(x, avr_len[0], 'r-', label = 'train length')
+    ax[0][1].plot(x, avr_len[1], 'b-', label = 'test length')
     ax[0][1].set_ylabel('average length')
     ax[0][1].set_xlabel('episode')
     ax[0][1].legend()
 
     # 寻路情况
-    ax[1][0].plot(suc_length[0][0], suc_length[0][1], 'r.', linewidth = 0.10, label = '探索长度')
-    ax[1][0].plot(suc_length[1][0], suc_length[1][1], 'b.', linewidth = 0.10, label = '利用长度')
+    ax[1][0].plot(suc_length[0][0], suc_length[0][1], 'r.', linewidth = 0.10, label = 'train length')
+    ax[1][0].plot(suc_length[1][0], suc_length[1][1], 'b.', linewidth = 0.10, label = 'test length')
     ax[1][0].set_ylabel('path length')
     ax[1][0].set_xlabel('episode')
     ax[1][0].legend()
@@ -147,8 +148,8 @@ def Test(mode):
     #endpoints[3][3] /= 8
     ax[1][1].imshow(endpoints, cmap = 'gray')
 
-    plt.rcParams['font.sans-serif']=['SimHei'] #显示中文标签
-    plt.rcParams['axes.unicode_minus']=False
+    #plt.rcParams['font.sans-serif']=['SimHei'] #显示中文标签
+    #plt.rcParams['axes.unicode_minus']=False
     plt.tight_layout()
     #plt.show()
     plt.savefig('../img/{}.png'.format(get_time()))

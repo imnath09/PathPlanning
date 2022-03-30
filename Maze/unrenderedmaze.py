@@ -1,4 +1,4 @@
-import numpy as np
+import math
 import sys
 sys.path.append('..')
 
@@ -10,9 +10,9 @@ OUT = 'out of bound'
 CRASH = 'collision'
 ARRIVE = 'arrive'
 
-ARRIVE_REWARD = 10.0
+ARRIVE_REWARD = 2.0
 CRASH_REWARD = -1.0
-STEP_REWARD = -0.001 # 实际使用cosine
+#STEP_REWARD = -0.001 # 实际使用cosine
 
 END_IF_OUT = False # 出界时是否结束训练
 
@@ -112,7 +112,7 @@ class UnrenderedMaze():
                 cosine = 0
             else:
                 cosine = (a2 + b2 - c2) / (2 * (a2 * b2)**0.5)
-            reward = cosine
+            reward = cosine - math.log(len(self.cur_path), 100)
             #print('cos=', cosine)
 
             done = False
