@@ -3,6 +3,7 @@ import sys
 sys.path.append('..')
 
 from .InitMap import *
+from .ComplexMaze import *
 from Common.dmdp_actions import *
 
 PIXEL = 30
@@ -12,7 +13,7 @@ ARRIVE = 'arrive'
 
 ARRIVE_REWARD = 2.0
 CRASH_REWARD = -1.0
-#STEP_REWARD = -0.001 # 实际使用cosine
+STEP_REWARD = -0.001 # 实际使用cosine
 
 END_IF_OUT = False # 出界时是否结束训练
 
@@ -39,6 +40,7 @@ class UnrenderedMaze():
         self.new_sln = False
 
         self.map = InitMap()
+        #self.map = CplxMaze()
         self.walker = self.map.start
         self.obstacles = self.map.obstacles
         self.height = self.map.height
