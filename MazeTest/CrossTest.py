@@ -7,7 +7,7 @@ from Maze.unrenderedmaze import *
 from Maze.gymmaze import GymMaze
 from Algorithm.TorchDQN import DeepQNetwork
 from Algorithm.QLearning import QLearningTable
-from Common.dmdp_agent import AgentType
+from Common.dmdp_enum import AgentType
 
 import matplotlib.pyplot as plt
 import argparse
@@ -22,7 +22,7 @@ def Batch(isTrain, gap):
     for episode in range(1, gap + 1):
         observation = env.reset()
         # one trial
-        for _ in range(2000):
+        for _ in range(500):
         #while True:
             action = agent.choose_action(encode(observation)) if isTrain else agent.action(encode(observation))
             observation_, reward, done, info = env.step(action)
@@ -80,7 +80,7 @@ def core(test_gap, train_gap, total_iter):
         if i % 10 == 0:
             print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
 
-    info = 'DQNTest{}to{}test{}train{}iter{}'.format(
+    info = 'Cross{}to{}test{}train{}iter{}'.format(
         starttime, get_time(), test_gap, train_gap, total_iter)
     print(info)
     print(endpoints)
@@ -92,29 +92,33 @@ def display(info, test_rate, train_rate, test_len, train_len, stl):
     fig = plt.figure(figsize = (15, 10))
     fig.suptitle(info)
     ax = fig.subplots(2, 2)
-
+    # 成功率
     ax[0, 0].plot(x, test_rate, 'r'+stl, label = 'test rate')
     ax[0, 0].plot(x, train_rate, 'b'+stl, label = 'train rate')
+    '''avrate = []
+    for i in range(0, total_iter, 10):
+        avrate.append(sum(test_rate[i: i + 9]) / 10)
+    ax[0, 0].plot(range(10, total_iter + 1, 10), avrate, 'y'+stl, label = 'avrtest rate')'''
     ax[0, 0].set_ylabel('success rate,')
-    ax[0, 0].set_xlabel('iteration')
+    ax[0, 0].set_xlabel('horizon')
     ax[0, 0].legend()
-
+    # 平均长度
     ax[0, 1].plot(x, train_len, 'b'+stl, label = 'train length')
     ax[0, 1].plot(x, test_len, 'r'+stl, label = 'test length')
     ax[0, 1].set_ylabel('average length')
-    ax[0, 1].set_xlabel('iteration')
+    ax[0, 1].set_xlabel('horizon')
     ax[0, 1].legend()
-
+    # 终点热力图
     ax[1, 0].imshow(endpoints, cmap = 'gray')
-
+    # 损失函数
     if MODE == AgentType.DQN:
         ax[1, 1].plot(np.arange(len(agent.cost_his)), agent.cost_his)
         ax[1, 1].set_ylabel('Cost')
         ax[1, 1].set_xlabel('training steps')
         #ax[1, 1].legend()
-    #else:
-        #tbl = guid_table(agent.q_table)
-        #ax[1, 1].imshow(tbl)
+    # 方向导图
+    else:
+        guide_table(agent.q_table)
 
     #plt.rcParams['font.sans-serif']=['SimHei'] #显示中文标签
     #plt.rcParams['axes.unicode_minus']=False
@@ -141,14 +145,17 @@ def decode(index):
     l = np.array(l)
     return l
 
-def guid_table(table):
-    ntbl = np.full((env.height + 2, env.width + 2), actions.stop.name)
+def guide_table(table):
+    ntbl = np.full((env.height + 2, env.width + 2), 4.0)
     for r in table.index:
-        pos = decode(r)
+        pos = tuple(decode(r) + [1, 1])
         s = table.loc[r]
         c = np.random.choice(s[s==np.max(s)].index)
-        content = actions(c).name#.ljust(5, ' ')
-        ntbl[tuple(pos + [1, 1])] = content
+        content = actions(c).name[0]#.ljust(5, ' ')
+        ntbl[pos] = c
+        plt.annotate(text=content, xy=(pos[1], pos[0]), ha='center', va='center')
+    plt.imshow(ntbl, cmap = 'rainbow', vmin = 0, vmax = 4)
+    plt.colorbar()
     return ntbl
 
 if __name__ == '__main__':

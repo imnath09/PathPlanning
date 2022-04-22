@@ -1,9 +1,5 @@
 
-from math import exp
-from os import stat_result
 import sys
-
-from gym.envs.classic_control.rendering import LineWidth
 sys.path.append('..')
 
 from Maze.unrenderedmaze import *
@@ -19,10 +15,9 @@ import argparse
 
 from Common.dmdp_actions import *
 import time
-import gym
 
-STAT_GAP = 1000
-ITER = 1000
+STAT_GAP = 10
+ITER = 10
 
 
 
@@ -117,30 +112,31 @@ def Test(mode):
     info = 'QTable{}to{}gap{}iter{}'.format(starttime, get_time(), STAT_GAP, ITER)
     print(info)
     print(endpoints)
-    display(info, suc, avr_len, suc_length,)
+    display(info, suc, avr_len, suc_length, '-')
+    display(info, suc, avr_len, suc_length, '.')
 
-def display(info, suc, avr_len, suc_length):
+def display(info, suc, avr_len, suc_length, stl):
     x = range(1, 1 + ITER)
     fig = plt.figure(figsize = (15,10))
     fig.suptitle(info)
     ax = fig.subplots(2, 2)
     # 成功率
-    ax[0][0].plot(x, suc[0], 'r-', label = 'train rate')
-    ax[0][0].plot(x, suc[1], 'b-', label = 'test rate')
+    ax[0][0].plot(x, suc[0], 'r'+stl, label = 'train rate')
+    ax[0][0].plot(x, suc[1], 'b'+stl, label = 'test rate')
     ax[0][0].set_ylabel('success rate')
-    ax[0][0].set_xlabel('episode')
+    ax[0][0].set_xlabel('horizon')
     ax[0][0].legend()
 
     # 平均路径长度
-    ax[0][1].plot(x, avr_len[0], 'r-', label = 'train length')
-    ax[0][1].plot(x, avr_len[1], 'b-', label = 'test length')
+    ax[0][1].plot(x, avr_len[0], 'r'+stl, label = 'train length')
+    ax[0][1].plot(x, avr_len[1], 'b'+stl, label = 'test length')
     ax[0][1].set_ylabel('average length')
-    ax[0][1].set_xlabel('episode')
+    ax[0][1].set_xlabel('horizon')
     ax[0][1].legend()
 
     # 寻路情况
-    ax[1][0].plot(suc_length[0][0], suc_length[0][1], 'r.', linewidth = 0.10, label = 'train length')
-    ax[1][0].plot(suc_length[1][0], suc_length[1][1], 'b.', linewidth = 0.10, label = 'test length')
+    ax[1][0].plot(suc_length[0][0], suc_length[0][1], 'r'+stl, linewidth = 0.10, label = 'train length')
+    ax[1][0].plot(suc_length[1][0], suc_length[1][1], 'b'+stl, linewidth = 0.10, label = 'test length')
     ax[1][0].set_ylabel('path length')
     ax[1][0].set_xlabel('episode')
     ax[1][0].legend()
@@ -153,7 +149,7 @@ def display(info, suc, avr_len, suc_length):
     #plt.rcParams['axes.unicode_minus']=False
     plt.tight_layout()
     #plt.show()
-    plt.savefig('../img/{}.png'.format(get_time()))
+    plt.savefig('../img/{}{}.png'.format(get_time(), stl))
     plt.close('all')
     if mode == 0 or mode ==1:
         show_table(agent.q_table)

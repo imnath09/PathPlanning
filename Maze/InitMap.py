@@ -3,11 +3,11 @@ import numpy as np
 
 class InitMap():
     def __init__(self):
-        self.height = 30
+        self.height = 20#30#
         self.width = 16
         self.start = np.array([0, 3])
-        self.destination = np.array([29, 12])
-        #self.destination = np.array([12, 7])
+        #self.destination = np.array([29, 12])
+        self.destination = np.array([19, 12])
 
         self.obstacles = []
 
@@ -17,6 +17,10 @@ class InitMap():
             self.obstacles.append(np.array([4 + 3 * i, 3]))# + 6 * j]))
             self.obstacles.append(np.array([4 + 3 * i, 4]))# + 6 * j]))
             self.obstacles.append(np.array([4 + 3 * i, 5]))# + 6 * j]))
+        for i in range(4, 25):
+            break
+            self.obstacles.append(np.array([i, 5]))
+            self.obstacles.append(np.array([i, 2]))
 
         for i in range(6):
             #for j in range(2):
@@ -34,3 +38,6 @@ class InitMap():
             self.obstacles.append(np.array([7 + 8 * j, 8]))
             self.obstacles.append(np.array([8 + 8 * j, 8]))
             self.obstacles.append(np.array([9 + 8 * j, 8]))
+        for j in range(30):
+            break
+            self.obstacles.append(np.array([j, 8]))

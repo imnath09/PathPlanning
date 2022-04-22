@@ -40,17 +40,5 @@ class QLearningTable:
     def check_state_exist(self, state):
         if state not in self.q_table.index:
             #self.q_table = self.q_table.append(pd.Series([0]*len(self.actions),index=self.q_table.columns,name=state))
-            self.q_table.loc[state] = [0]*len(self.actions)
-
-    def show_q_table(self):
-        count = 0
-        info = ''
-        for r in self.q_table.index:
-            count += 1
-            s=self.q_table.loc[r]
-            info = '{}|{}->{}'.format(info, r, np.random.choice(s[s==np.max(s)].index).name)
-            if count % 5 == 0:
-                print(info)
-                info = ''
-
+            self.q_table.loc[state] = [0.]*len(self.actions)
 
