@@ -14,11 +14,11 @@ WALK = 'walk'
 MERGE = 'merge'
 FOUND = 'found'
 
-ARRIVE_REWARD = 0#1#
+ARRIVE_REWARD = 1#0#
 CRASH_REWARD = -1.0
 STEP_REWARD = 0#-0.01#
 
-END_IF_OUT = True # 出界时是否结束训练
+END_IF_OUT = False # 出界时是否结束训练
 
 class MultiBase:
     def __init__(self):
@@ -30,12 +30,12 @@ class MultiBase:
         self.start = self.map.start
         self.agent = None
         self.srcs = [
-            Source('start', self.start, isstart = True),
-            #Source('10-7', np.array([10, 7])),
-            Source('8-2', np.array([8, 2])),
-            Source('13-10', np.array([13, 10])),
-            #Source('15-14', np.array([15, 14])),
-            Source('end', self.destination, isend = True)
+            Source(self.start, isstart = True),
+            Source(np.array([8, 2])),
+            Source(np.array([10, 7])),
+            #Source(np.array([13, 10])),
+            Source(np.array([15, 14]))
+            #Source(self.destination, isend = True)
             ]
     def intersection(self, src : Source):
         for s in self.srcs:
@@ -52,30 +52,59 @@ class MultiBase:
         stime = datetime.datetime.now()
         print(stime, 'start')
         while True:
-            info = self.iterstep()
-            if info == FOUND:
+            result = self.iterstep()
+            if result is not None:
                 etime = datetime.datetime.now()
                 print(etime, 'found. total', etime - stime)
-                break
-        #gt = guide_table(self.agent.q_table, self.height, self.width, 'global')
-        #plt.show()
-        #print(gt)
+                return result
     def iterstep(self):
         '''迭代，让每个source走一步'''
         for src in self.srcs:#[0: -1]:#
-            info = self.walk(src)
-            if info == MERGE or info == FOUND:
-                self.display()
-                return info
-
-    def walk(self, pos, action): # walk(self, src)
+            result = self.walk(src)
+            if result.isstart and result.isend:
+                return result
+        return None
+    def walk(self, src):
         '''每个source走一步'''
         pass
-    def merge(self, walker, other):
-        '''合并两个source'''
-        pass
-    def display(self):
-        pass
+
+    def step(self, src, action):
+        next = src.cur + DIRECTION[action]
+        # 出界
+        if (next[0] < 0 or
+            next[1] < 0 or
+            next[0] >= self.height or
+            next[1] >= self.width):
+            reward = CRASH_REWARD
+            done = END_IF_OUT # 出界是否结束
+            if not END_IF_OUT:
+                next = src.cur # 出界结束就随机跳，否则回退
+            info = OUT
+        # 碰撞
+        elif any((next == x).all() for x in self.obstacles):
+            reward = CRASH_REWARD
+            done = True
+            info = CRASH
+        # 抵达目的地
+        elif (next == self.destination).all():
+            src.end = next
+            src.isend = True
+            reward = ARRIVE_REWARD
+            done = True
+            info = FOUND if src.isstart else ARRIVE
+        # 抵达源内部终点
+        elif (next == src.end).all():
+            reward = ARRIVE_REWARD / 1000
+            done = True
+            info = ARRIVE
+        # 正常移动
+        else:# 
+            done = False
+            info = WALK
+            reward = STEP_REWARD
+
+        return reward, done, info, next
+
     def add_block(self, src, pos):
         pass
     def move_block(self, src, pos):
@@ -119,3 +148,16 @@ def guide_table(table, height, width, title):
     plt.savefig('../img/{}.png'.format(title))
     plt.close()
     return ntbl
+def euclidean2(pos1, pos2):
+    return (pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2
+def closer(p1, p2, dest):
+    '''p1是否比p2更接近dest'''
+    if p1 is None and p2 is None:
+        return None
+    if p1 is None:
+        return False
+    if p2 is None:
+        return True
+    d1 = euclidean2(p1, dest)
+    d2 = euclidean2(p2, dest)
+    return d1 < d2

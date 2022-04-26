@@ -29,7 +29,10 @@ class RenderMap(gym.Env, MultipleReversal):
         # 画障碍
         for o in self.obstacles:
             pl = self.draw_shape(o)
-            self.viewer.add_geom(pl)
+
+        # 画起点终点
+        st = self.draw_shape(self.start, color = (1, 0, 0), shape = 'circle', radius = 0.4)
+        ed = self.draw_shape(self.destination, color = (1, 1, 0), shape = 'circle', radius = 0.4)
 
         # 移动点
         self.colors = {}
@@ -37,7 +40,6 @@ class RenderMap(gym.Env, MultipleReversal):
         for src in self.srcs:
             # 起始点
             t = self.draw_shape(src.cur, color = (0, 0, 1), shape = 'circle', radius = 0.3)
-            self.viewer.add_geom(t)
             # 随机颜色
             color = np.array([np.random.random(), np.random.random(), np.random.random()])
             self.colors[src] = color
@@ -50,7 +52,6 @@ class RenderMap(gym.Env, MultipleReversal):
             agt = self.draw_shape(
                 src.cur, trans = tr, color = opscolor, 
                 shape = 'circle', radius = 0.4)
-            self.viewer.add_geom(agt)
             self.sources[src] = tr
 
         self.viewer.render()
@@ -58,7 +59,6 @@ class RenderMap(gym.Env, MultipleReversal):
     def add_block(self, src, pos):
         color = self.colors[src]
         p = self.draw_shape(pos, color = color, radius = 0.2)
-        self.viewer.add_geom(p)
         self.viewer.render()
         #time.sleep(0.1)
 
@@ -81,6 +81,7 @@ class RenderMap(gym.Env, MultipleReversal):
         if trans is None:
             trans = rendering.Transform(translation = tuple((pos + (0.5, 0.5)) * PIXEL))
         pl.add_attr(trans)
+        self.viewer.add_geom(pl)
         return pl
 
 if __name__ == '__main__':
