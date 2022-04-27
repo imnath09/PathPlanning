@@ -8,7 +8,7 @@ from collections import deque
 
 import sys
 sys.path.append('..')
-from Common.dmdp_actions import actions
+from Common.dmdp_enum import *
 
 GAMMA = 0.9 # discount factor for target Q
 INITIAL_EPSILON = 0.9 # starting value of epsilon 0.5

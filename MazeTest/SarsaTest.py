@@ -2,14 +2,11 @@
 import sys
 sys.path.append('..')
 
-from Maze.unrenderedmaze import UnrenderedMaze
-from Maze.gymmaze import GymMaze
+from Maze.gymmaze import *
 from Algorithm.Sarsa import SarsaLambdaTable
 
 import matplotlib.pyplot as plt
 import argparse
-
-from Common.dmdp_actions import *
 
 TOTAL_EPISODE = 50000
 STAT_GAP = 1000

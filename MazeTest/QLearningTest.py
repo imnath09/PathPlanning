@@ -3,13 +3,11 @@ import sys
 sys.path.append('..')
 
 from Algorithm.QLearning import QLearningTable
-from Maze.unrenderedmaze import *
-from Maze.gymmaze import GymMaze
+from Maze.gymmaze import *
 
 import matplotlib.pyplot as plt
 import argparse
 
-from Common.dmdp_actions import *
 import time
 
 def Batch(isTrain, gap, flag):

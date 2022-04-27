@@ -4,7 +4,7 @@ sys.path.append('..')
 
 from .InitMap import *
 from .ComplexMaze import *
-from Common.dmdp_actions import *
+from Common.dmdp_enum import *
 
 PIXEL = 30
 OUT = 'out of bound'
@@ -39,8 +39,8 @@ class UnrenderedMaze():
         self.observation_space_n = 2
         self.new_sln = False
 
-        self.map = InitMap()
-        #self.map = CplxMaze()
+        #self.map = InitMap()
+        self.map = CplxMaze()
         self.walker = self.map.start
         self.obstacles = self.map.obstacles
         self.height = self.map.height

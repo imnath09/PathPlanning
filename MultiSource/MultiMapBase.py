@@ -1,5 +1,7 @@
 
-from MultiBase import *
+import sys
+sys.path.append('..')
+from MultiSource.MultiBase import *
 
 class MultiMapBase(MultiBase):
     def __init__(self):

@@ -1,19 +1,14 @@
-
-import sys
-
-sys.path.append('..')
-
-from Maze.unrenderedmaze import *
-from Maze.gymmaze import GymMaze
-from Algorithm.TorchDQN import DeepQNetwork
-from Algorithm.QLearning import QLearningTable
-from Common.dmdp_enum import AgentType
-
 import matplotlib.pyplot as plt
 import argparse
-
-from Common.dmdp_actions import *
 import time
+
+import sys
+sys.path.append('..')
+
+from Maze.gymmaze import *
+from MultiSource.RenderMap import *
+from Algorithm.TorchDQN import DeepQNetwork
+from Algorithm.QLearning import QLearningTable
 
 JUMP = 1
 
@@ -77,8 +72,8 @@ def core(test_gap, train_gap, total_iter):
         arvlen = sum(test) / len(test) if len(test) > 0 else 0
         test_len.append(arvlen)
 
-        if i % 10 == 0:
-            print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
+        #if i % 10 == 0:
+        #    print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
 
     info = 'Cross{}to{}test{}train{}iter{}'.format(
         starttime, get_time(), test_gap, train_gap, total_iter)
@@ -175,8 +170,12 @@ if __name__ == '__main__':
     env = GymMaze() if rendered else UnrenderedMaze()
     if MODE == AgentType.QLearning:
         agent = QLearningTable(actions=env.action_space)
+    elif MODE == AgentType.DQN:
+        agent = DeepQNetwork(
+            len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.9)
     else:
-        agent = DeepQNetwork(len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.9)
+        agent = MultipleReversal().explore().agent
     endpoints = np.zeros((env.height + 2, env.width + 2), dtype = int)
     print(type(agent))
     core(test_gap, train_gap, total_iter)
+

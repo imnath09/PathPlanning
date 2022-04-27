@@ -6,10 +6,7 @@ from DQN_Agent import *
 import sys
 sys.path.append('..')
 
-from Maze.unrenderedmaze import *
 from Maze.gymmaze import *
-
-from Common.dmdp_actions import *
 
 # Hyper Parameters
 ENV_NAME = 'CartPole-v0'

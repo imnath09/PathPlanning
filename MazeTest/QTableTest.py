@@ -2,8 +2,7 @@
 import sys
 sys.path.append('..')
 
-from Maze.unrenderedmaze import *
-from Maze.gymmaze import GymMaze
+from Maze.gymmaze import *
 from Algorithm.Sarsa import SarsaLambdaTable
 from Algorithm.QLearning import QLearningTable
 from Algorithm.TorchDQN import DeepQNetwork
@@ -13,7 +12,6 @@ from HZJ.dabeijing import *
 import matplotlib.pyplot as plt
 import argparse
 
-from Common.dmdp_actions import *
 import time
 
 STAT_GAP = 10

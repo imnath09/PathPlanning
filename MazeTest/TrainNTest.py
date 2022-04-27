@@ -6,8 +6,7 @@ import sys
 from gym.envs.classic_control.rendering import LineWidth
 sys.path.append('..')
 
-from Maze.unrenderedmaze import *
-from Maze.gymmaze import GymMaze
+from Maze.gymmaze import *
 from Algorithm.Sarsa import SarsaLambdaTable
 from Algorithm.QLearning import QLearningTable
 from Algorithm.TorchDQN import DeepQNetwork
@@ -15,7 +14,6 @@ from Algorithm.TorchDQN import DeepQNetwork
 import matplotlib.pyplot as plt
 import argparse
 
-from Common.dmdp_actions import *
 import time
 
 STAT_GAP = 1000

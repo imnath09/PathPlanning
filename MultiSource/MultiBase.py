@@ -3,9 +3,9 @@ sys.path.append('..')
 import datetime
 import matplotlib.pyplot as plt
 
-from Common.dmdp_actions import *
+from Common.dmdp_enum import *
 from Maze.ComplexMaze import *
-from Source import *
+from MultiSource.Source import *
 
 OUT = 'out of bound'
 CRASH = 'collision'

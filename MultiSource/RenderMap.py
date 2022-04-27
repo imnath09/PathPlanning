@@ -1,6 +1,9 @@
 
-from MultiMapBase import *
-from MultipleReversal import *
+
+import sys
+sys.path.append('..')
+from MultiSource.MultiMapBase import *
+from MultiSource.MultipleReversal import *
 
 import gym
 from gym.envs.classic_control import rendering
