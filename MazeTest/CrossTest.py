@@ -17,7 +17,7 @@ def Batch(isTrain, gap):
     for episode in range(1, gap + 1):
         observation = env.reset()
         # one trial
-        for _ in range(500):
+        for _ in range(2000):
         #while True:
             action = agent.choose_action(encode(observation)) if isTrain else agent.action(encode(observation))
             observation_, reward, done, info = env.step(action)
@@ -72,8 +72,8 @@ def core(test_gap, train_gap, total_iter):
         arvlen = sum(test) / len(test) if len(test) > 0 else 0
         test_len.append(arvlen)
 
-        #if i % 10 == 0:
-        #    print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
+        if i % 1 == 0:
+            print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
 
     info = 'Cross{}to{}test{}train{}iter{}'.format(
         starttime, get_time(), test_gap, train_gap, total_iter)
@@ -158,7 +158,7 @@ if __name__ == '__main__':
     parser.add_argument('--render', action = 'store_true', help = 'render or not')
     parser.add_argument('--testgap', type=int, default=10)
     parser.add_argument('--traingap', type=int, default=1000)
-    parser.add_argument('--iter', type=int, default=1000)
+    parser.add_argument('--iter', type=int, default=100)
     parser.add_argument('--mode', type=int, default=0, help = '0:DQN, 1:QLearning')
     args = parser.parse_args()
 
@@ -169,7 +169,7 @@ if __name__ == '__main__':
     MODE = AgentType(args.mode)
     env = GymMaze() if rendered else UnrenderedMaze()
     if MODE == AgentType.QLearning:
-        agent = QLearningTable(actions=env.action_space)
+        agent = QLearningTable(actions=env.action_space, e_greedy=0.9)
     elif MODE == AgentType.DQN:
         agent = DeepQNetwork(
             len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.9)
