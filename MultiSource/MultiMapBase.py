@@ -1,6 +1,4 @@
 
-import sys
-sys.path.append('..')
 from MultiSource.MultiBase import *
 
 class MultiMapBase(MultiBase):

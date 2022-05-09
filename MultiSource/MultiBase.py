@@ -1,11 +1,10 @@
 import sys
 sys.path.append('..')
 import datetime
-import matplotlib.pyplot as plt
 
-from Common.dmdp_enum import *
 from Maze.ComplexMaze import *
 from MultiSource.Source import *
+from Common.utils import *
 
 OUT = 'out of bound'
 CRASH = 'collision'
@@ -19,6 +18,7 @@ CRASH_REWARD = -1.0
 STEP_REWARD = 0#-0.01#
 
 END_IF_OUT = False # 出界时是否结束训练
+END_IF_CRASH = False # 碰撞时是否结束训练
 
 class MultiBase:
     def __init__(self):
@@ -28,7 +28,7 @@ class MultiBase:
         self.obstacles = self.map.obstacles
         self.destination = self.map.destination
         self.start = self.map.start
-        self.agent = None
+        #self.agent = None
         self.srcs = [
             Source(self.start, isstart = True),
             Source(np.array([8, 2])),
@@ -37,6 +37,18 @@ class MultiBase:
             Source(np.array([15, 14]))
             #Source(self.destination, isend = True)
             ]
+        # 预留着以后合并UnrenderdMaze进来
+        self.s_path = []
+        self.cur_path = []
+        self.action_space = range(4)  #list(actions)[:4]
+        self.action_space_n = len(self.action_space)
+        self.observation_space_n = 2
+        self.new_sln = False
+    # 预留着以后合并UM
+    def reset(self):
+        pass
+    def render(self):
+        pass
     def intersection(self, src : Source):
         for s in self.srcs:
             if not s.name == src.name and s.contain(src.cur):
@@ -64,11 +76,11 @@ class MultiBase:
             if result.isstart and result.isend:
                 return result
         return None
-    def walk(self, src):
+    def walk(self, src : Source):
         '''每个source走一步'''
         pass
 
-    def step(self, src, action):
+    def step(self, src : Source, action):
         next = src.cur + DIRECTION[action]
         # 出界
         if (next[0] < 0 or
@@ -83,7 +95,9 @@ class MultiBase:
         # 碰撞
         elif any((next == x).all() for x in self.obstacles):
             reward = CRASH_REWARD
-            done = True
+            done = END_IF_CRASH # 碰撞是否结束
+            if not END_IF_CRASH:
+                next = src.cur
             info = CRASH
         # 抵达目的地
         elif (next == self.destination).all():
@@ -109,55 +123,3 @@ class MultiBase:
         pass
     def move_block(self, src, pos):
         pass
-
-def encode(pos):
-    '''编成字符'''
-    r = '{},{}'.format(pos[0], pos[1])
-    return r
-def decode(index):
-    l = index.split(',')
-    for i in range(len(l)):
-        l[i] = int(l[i])
-    l = np.array(l)
-    return l
-def ops(action):
-    if action == 0:
-        return 1
-    elif action == 1:
-        return 0
-    elif action == 2:
-        return 3
-    elif action == 3:
-        return 2
-    else:
-        return 4
-def guide_table(table, height, width, title):
-    '''画策略图'''
-    ntbl = np.full((height + 2, width + 2), 4.0)
-    for r in table.index:
-        pos = tuple(decode(r) + [1, 1])
-        s = table.loc[r]
-        c = np.random.choice(s[s==np.max(s)].index)
-        content = actions(c).name[0]#.ljust(5, ' ')
-        ntbl[pos] = c
-        plt.annotate(text=content, xy=(pos[1], pos[0]), ha='center', va='center')
-    plt.title(title)
-    plt.imshow(ntbl, cmap='Greens_r', vmin = 0, vmax = 4)
-    plt.colorbar()
-    plt.tight_layout()
-    plt.savefig('../img/{}.png'.format(title))
-    plt.close()
-    return ntbl
-def euclidean2(pos1, pos2):
-    return (pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2
-def closer(p1, p2, dest):
-    '''p1是否比p2更接近dest'''
-    if p1 is None and p2 is None:
-        return None
-    if p1 is None:
-        return False
-    if p2 is None:
-        return True
-    d1 = euclidean2(p1, dest)
-    d2 = euclidean2(p2, dest)
-    return d1 < d2
