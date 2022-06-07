@@ -4,7 +4,8 @@ from enum import Enum
 class AgentType(Enum):
     DQN = 0
     QLearning = 1
-    other = 2
+    Sarsa = 2
+    other = 3
 
 DIRECTION = [
     np.array([-1, 0]),

@@ -12,7 +12,9 @@ class RL(object):
 
     def check_state_exist(self, state):
         if state not in self.q_table.index:
-            self.q_table = self.q_table.append(pd.Series([0]*len(self.actions), index=self.q_table.columns, name=state))
+            #self.q_table = self.q_table.append(pd.Series([0]*len(self.actions), index=self.q_table.columns, name=state))
+            self.q_table.loc[state] = [0.]*len(self.actions)
+
 
     def choose_action(self, observation):
         self.check_state_exist(observation)
@@ -28,6 +30,13 @@ class RL(object):
             self.random_action = True
         return action
 
+    def action(self, observation):
+        self.check_state_exist(observation)
+        state_action = self.q_table.loc[observation,:]
+        action = np.random.choice(state_action[state_action==np.max(state_action)].index)
+        self.random_action = False
+        return action
+
     def learn(self, *args):
         pass
 
@@ -39,9 +48,11 @@ class SarsaLambdaTable(RL):
 
     def check_state_exist(self, state):
         if state not in self.q_table.index:
-            to_be_append = pd.Series([0]*len(self.actions), index=self.q_table.columns, name=state)
-            self.q_table = self.q_table.append(to_be_append)
-            self.eligibility_trace = self.eligibility_trace.append(to_be_append)
+            #to_be_append = pd.Series([0]*len(self.actions), index=self.q_table.columns, name=state)
+            #self.q_table = self.q_table.append(to_be_append)
+            #self.eligibility_trace = self.eligibility_trace.append(to_be_append)
+            self.q_table.loc[state] = [0.]*len(self.actions)
+            self.eligibility_trace.loc[state] = [0.]*len(self.actions)
 
     def learn(self, s, a, r, s_, a_, done):
         self.check_state_exist(s_)

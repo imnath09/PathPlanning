@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import argparse
 import time
-
+import os
 import sys
 sys.path.append('..')
 
@@ -9,6 +9,7 @@ from Maze.gymmaze import *
 from MultiSource.RenderMap import *
 from Algorithm.TorchDQN import DeepQNetwork
 from Algorithm.QLearning import QLearningTable
+from Algorithm.Sarsa import SarsaLambdaTable
 
 JUMP = 1
 
@@ -16,16 +17,27 @@ def Batch(isTrain, gap):
     path_len = [] # 记录成功时的路径长度
     for episode in range(1, gap + 1):
         observation = env.reset()
+
+        if MODE == AgentType.Sarsa:
+            action = agent.choose_action(encode(observation)) if isTrain else agent.action(encode(observation))
+            agent.eligibility_trace *= 0
         # one trial
         for _ in range(2000):
         #while True:
-            action = agent.choose_action(encode(observation)) if isTrain else agent.action(encode(observation))
-            observation_, reward, done, info = env.step(action)
-            if isTrain:
-                learn(observation, action, reward, observation_, done)
-            observation = observation_
-            env.render()
+            if MODE == AgentType.Sarsa:
+                observation_, reward, done, info = env.step(action)
+                action_ = agent.choose_action(encode(observation)) if isTrain else agent.action(encode(observation))
+                agent.learn(encode(observation), action, reward, encode(observation_), action_, done)
+                observation = observation_
+                action = action_
+            else:
+                action = agent.choose_action(encode(observation)) if isTrain else agent.action(encode(observation))
+                observation_, reward, done, info = env.step(action)
+                if isTrain:
+                    learn(observation, action, reward, observation_, done)
+                observation = observation_
 
+            env.render()
             if done:
                 if not isTrain:
                     endpoints[tuple(observation + [1, 1])] += 1
@@ -60,6 +72,7 @@ def core(test_gap, train_gap, total_iter):
     train_rate = []
     train_len = []
     starttime = get_time()
+    os.makedirs('../img/' + starttime)
     print('start', starttime)
     for i in range(1, 1 + total_iter):
         train = Batch(isTrain = True, gap = train_gap)
@@ -72,17 +85,22 @@ def core(test_gap, train_gap, total_iter):
         arvlen = sum(test) / len(test) if len(test) > 0 else 0
         test_len.append(arvlen)
 
-        if i % 1 == 0:
+        if i % 10 == 0:
             print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
 
     info = 'Cross{}to{}test{}train{}iter{}'.format(
         starttime, get_time(), test_gap, train_gap, total_iter)
     print(info)
     print(endpoints)
-    display(info, test_rate, train_rate, test_len, train_len, '-')
-    display(info, test_rate, train_rate, test_len, train_len, '.')
+    display(info, test_rate, train_rate, test_len, train_len, '-', starttime)
+    display(info, test_rate, train_rate, test_len, train_len, '.', starttime)
+    with open('../img/{}/data.txt'.format(starttime), 'w', encoding='utf-8') as f:
+        f.write(','.join([str(x) for x in test_rate]) + '\n')
+        f.write(','.join([str(round(x, 2)) for x in test_len]) + '\n')
+        f.write(','.join([str(x) for x in train_rate]) + '\n')
+        f.write(','.join([str(round(x, 2)) for x in train_len]) + '\n')
 
-def display(info, test_rate, train_rate, test_len, train_len, stl):
+def display(info, test_rate, train_rate, test_len, train_len, stl, t):
     x = range(1, 1 + total_iter)
     fig = plt.figure(figsize = (15, 10))
     fig.suptitle(info)
@@ -118,7 +136,7 @@ def display(info, test_rate, train_rate, test_len, train_len, stl):
     #plt.rcParams['font.sans-serif']=['SimHei'] #显示中文标签
     #plt.rcParams['axes.unicode_minus']=False
     plt.tight_layout()
-    plt.savefig('../img/{}{}.png'.format(get_time(), stl))
+    plt.savefig('../img/{}/{}.png'.format(t, stl))
     #plt.show()
     plt.close('all')
 
@@ -159,7 +177,7 @@ if __name__ == '__main__':
     parser.add_argument('--testgap', type=int, default=10)
     parser.add_argument('--traingap', type=int, default=1000)
     parser.add_argument('--iter', type=int, default=100)
-    parser.add_argument('--mode', type=int, default=0, help = '0:DQN, 1:QLearning')
+    parser.add_argument('--mode', type=int, default=0, help = '0:DQN, 1:QLearning, 2:Sarsa')
     args = parser.parse_args()
 
     test_gap = args.testgap
@@ -173,6 +191,8 @@ if __name__ == '__main__':
     elif MODE == AgentType.DQN:
         agent = DeepQNetwork(
             len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.9)
+    elif MODE == AgentType.Sarsa:
+        agent = SarsaLambdaTable(actions=env.action_space, e_greedy=0.9)
     else:
         agent = MultipleReversal().explore().agent
     endpoints = np.zeros((env.height + 2, env.width + 2), dtype = int)
