@@ -2,30 +2,18 @@ import sys
 sys.path.append('..')
 import datetime
 
+from Maze.unrenderedmaze import *
 from Maze.ComplexMaze import *
 from MultiSource.Source import *
 from Common.utils import *
 
-OUT = 'out of bound'
-CRASH = 'collision'
-ARRIVE = 'arrive'
 WALK = 'walk'
 MERGE = 'merge'
 FOUND = 'found'
 
-ARRIVE_REWARD = 1#0#
-CRASH_REWARD = -1.0
-STEP_REWARD = 0#-0.01#
-
-END_IF_OUT = False # 出界时是否结束训练
-END_IF_CRASH = False # 碰撞时是否结束训练
-
-class MultiBase:
+class MultiBase(UnrenderedMaze):
     def __init__(self):
-        self.map = CplxMaze()
-        self.height = self.map.height
-        self.width = self.map.width
-        self.obstacles = self.map.obstacles
+        UnrenderedMaze.__init__(self)
         self.destination = self.map.destination
         self.start = self.map.start
         #self.agent = None
@@ -37,18 +25,6 @@ class MultiBase:
             Source(np.array([15, 14]))
             #Source(self.destination, isend = True)
             ]
-        # 预留着以后合并UnrenderdMaze进来
-        self.s_path = []
-        self.cur_path = []
-        self.action_space = range(4)  #list(actions)[:4]
-        self.action_space_n = len(self.action_space)
-        self.observation_space_n = 2
-        self.new_sln = False
-    # 预留着以后合并UM
-    def reset(self):
-        pass
-    def render(self):
-        pass
     def intersection(self, src : Source):
         for s in self.srcs:
             if not s.name == src.name and s.contain(src.cur):
