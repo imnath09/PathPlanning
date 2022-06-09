@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import time
 from Common.dmdp_enum import *
 
 def encode(pos):
@@ -25,8 +26,9 @@ def ops(action):
         return 2
     else:
         return 4
-def guide_table(table, height, width, title):
+def guide_table(table, height, width, title, cmap='Greens_r'):
     '''画策略图'''
+    #plt.figure(figsize=(10, 10))
     ntbl = np.full((height + 2, width + 2), 4.0)
     for r in table.index:
         pos = tuple(decode(r) + [1, 1])
@@ -36,7 +38,7 @@ def guide_table(table, height, width, title):
         ntbl[pos] = c
         plt.annotate(text=content, xy=(pos[1], pos[0]), ha='center', va='center')
     plt.title(title)
-    plt.imshow(ntbl, cmap='Greens_r', vmin = 0, vmax = 4)
+    plt.imshow(ntbl, cmap=cmap, vmin = 0, vmax = 4)
     plt.colorbar()
     plt.tight_layout()
     plt.savefig('../img/{}.png'.format(title))
@@ -55,3 +57,5 @@ def closer(p1, p2, dest):
     d1 = euclidean2(p1, dest)
     d2 = euclidean2(p2, dest)
     return d1 < d2
+def get_time():
+    return time.strftime('%m-%d %H.%M.%S', time.localtime())

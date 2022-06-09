@@ -6,13 +6,12 @@ from Maze.gymmaze import *
 from Algorithm.Sarsa import SarsaLambdaTable
 from Algorithm.QLearning import QLearningTable
 from Algorithm.TorchDQN import DeepQNetwork
+from Common.utils import *
 
 from HZJ.dabeijing import *
 
 import matplotlib.pyplot as plt
 import argparse
-
-import time
 
 STAT_GAP = 10
 ITER = 10
@@ -153,9 +152,6 @@ def display(info, suc, avr_len, suc_length, stl):
         show_table(agent.q_table)
     else:
         agent.plot_cost()
-
-def get_time():
-    return time.strftime('%m-%d %H.%M.%S', time.localtime())
 
 def show_table(table):
     ntbl = np.full((env.height + 2, env.width + 2), actions.stop.name)

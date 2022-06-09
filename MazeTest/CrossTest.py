@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import argparse
-import time
 import os
 import sys
 sys.path.append('..')
@@ -10,6 +9,7 @@ from MultiSource.RenderMap import *
 from Algorithm.TorchDQN import DeepQNetwork
 from Algorithm.QLearning import QLearningTable
 from Algorithm.Sarsa import SarsaLambdaTable
+from Common.utils import *
 
 JUMP = 1
 
@@ -22,7 +22,7 @@ def Batch(isTrain, gap):
             action = agent.choose_action(encode(observation)) if isTrain else agent.action(encode(observation))
             agent.eligibility_trace *= 0
         # one trial
-        for _ in range(2000):
+        for _ in range(500):
         #while True:
             if MODE == AgentType.Sarsa:
                 observation_, reward, done, info = env.step(action)
@@ -49,7 +49,7 @@ def Batch(isTrain, gap):
                         info = "path length:{}".format(length)
                         for n in env.cur_path:
                            info = ("{}->{}".format(info, str(n)))
-                        print("episode-{}{} {}".format('t' if isTrain else 'f', episode, info))
+                        print("epi-{}{} {}".format('t' if isTrain else 'f', episode, info))
                 break
         # enf of while(one trial)
     # enf of for(trial process)
@@ -71,9 +71,14 @@ def core(test_gap, train_gap, total_iter):
     test_len = [] # 平均长度
     train_rate = []
     train_len = []
-    starttime = get_time()
-    os.makedirs('../img/' + starttime)
-    print('start', starttime)
+
+    stime = get_time()
+    expname = '{} tr{}it{}ts{} {}'.format(stime, train_gap, total_iter, test_gap, MODE.name)
+    os.makedirs('../img/{}'.format(expname))
+    print(expname)
+
+    train_info = '0 {} /\n'.format(get_time())
+
     for i in range(1, 1 + total_iter):
         train = Batch(isTrain = True, gap = train_gap)
         train_rate.append(len(train) / train_gap)
@@ -85,63 +90,26 @@ def core(test_gap, train_gap, total_iter):
         arvlen = sum(test) / len(test) if len(test) > 0 else 0
         test_len.append(arvlen)
 
-        if i % 10 == 0:
+        if i % 10 == 0: # 只是为了看到进度的，有没有都行
             print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
+        train_info = '{}{} {} {}\n'.format(train_info, i, get_time(), len(test) / test_gap)
 
-    info = 'Cross{}to{}test{}train{}iter{}'.format(
-        starttime, get_time(), test_gap, train_gap, total_iter)
-    print(info)
     print(endpoints)
-    display(info, test_rate, train_rate, test_len, train_len, '-', starttime)
-    display(info, test_rate, train_rate, test_len, train_len, '.', starttime)
-    with open('../img/{}/data.txt'.format(starttime), 'w', encoding='utf-8') as f:
+    if MODE == AgentType.DQN:
+        plt.figure()
+        plt.plot(np.arange(len(agent.cost_his)), agent.cost_his)
+        plt.ylabel('cost')
+        plt.xlabel('training steps')
+        plt.savefig('../img/{}/cost.png'.format(expname))
+        plt.close()
+    else:
+        guide_table(agent.q_table, env.height, env.width, '{}/guide'.format(expname), cmap='rainbow')
+    with open('../img/{}/{}.txt'.format(expname, MODE.name), 'w', encoding='utf-8') as f:
         f.write(','.join([str(x) for x in test_rate]) + '\n')
         f.write(','.join([str(round(x, 2)) for x in test_len]) + '\n')
         f.write(','.join([str(x) for x in train_rate]) + '\n')
         f.write(','.join([str(round(x, 2)) for x in train_len]) + '\n')
-
-def display(info, test_rate, train_rate, test_len, train_len, stl, t):
-    x = range(1, 1 + total_iter)
-    fig = plt.figure(figsize = (15, 10))
-    fig.suptitle(info)
-    ax = fig.subplots(2, 2)
-    # 成功率
-    ax[0, 0].plot(x, test_rate, 'r'+stl, label = 'test rate')
-    ax[0, 0].plot(x, train_rate, 'b'+stl, label = 'train rate')
-    '''avrate = []
-    for i in range(0, total_iter, 10):
-        avrate.append(sum(test_rate[i: i + 9]) / 10)
-    ax[0, 0].plot(range(10, total_iter + 1, 10), avrate, 'y'+stl, label = 'avrtest rate')'''
-    ax[0, 0].set_ylabel('success rate,')
-    ax[0, 0].set_xlabel('horizon')
-    ax[0, 0].legend()
-    # 平均长度
-    ax[0, 1].plot(x, train_len, 'b'+stl, label = 'train length')
-    ax[0, 1].plot(x, test_len, 'r'+stl, label = 'test length')
-    ax[0, 1].set_ylabel('average length')
-    ax[0, 1].set_xlabel('horizon')
-    ax[0, 1].legend()
-    # 终点热力图
-    ax[1, 0].imshow(endpoints, cmap = 'gray')
-    # 损失函数
-    if MODE == AgentType.DQN:
-        ax[1, 1].plot(np.arange(len(agent.cost_his)), agent.cost_his)
-        ax[1, 1].set_ylabel('Cost')
-        ax[1, 1].set_xlabel('training steps')
-        #ax[1, 1].legend()
-    # 方向导图
-    else:
-        guide_table(agent.q_table)
-
-    #plt.rcParams['font.sans-serif']=['SimHei'] #显示中文标签
-    #plt.rcParams['axes.unicode_minus']=False
-    plt.tight_layout()
-    plt.savefig('../img/{}/{}.png'.format(t, stl))
-    #plt.show()
-    plt.close('all')
-
-def get_time():
-    return time.strftime('%m-%d %H.%M.%S', time.localtime())
+        f.write(train_info)
 
 def encode(pos):
     if MODE == AgentType.DQN:
@@ -158,26 +126,15 @@ def decode(index):
     l = np.array(l)
     return l
 
-def guide_table(table):
-    ntbl = np.full((env.height + 2, env.width + 2), 4.0)
-    for r in table.index:
-        pos = tuple(decode(r) + [1, 1])
-        s = table.loc[r]
-        c = np.random.choice(s[s==np.max(s)].index)
-        content = actions(c).name[0]#.ljust(5, ' ')
-        ntbl[pos] = c
-        plt.annotate(text=content, xy=(pos[1], pos[0]), ha='center', va='center')
-    plt.imshow(ntbl, cmap = 'rainbow', vmin = 0, vmax = 4)
-    plt.colorbar()
-    return ntbl
-
 if __name__ == '__main__':
+    #analyz('../img/QLearningTable.txt', '../img/MSSE.txt')
     parser = argparse.ArgumentParser()
     parser.add_argument('--render', action = 'store_true', help = 'render or not')
     parser.add_argument('--testgap', type=int, default=10)
     parser.add_argument('--traingap', type=int, default=1000)
     parser.add_argument('--iter', type=int, default=100)
-    parser.add_argument('--mode', type=int, default=0, help = '0:DQN, 1:QLearning, 2:Sarsa')
+    parser.add_argument(
+        '--mode', type=int, default=1, help = '0:DQN, 1:QLearning, 2:Sarsa, 3:MSSE')
     args = parser.parse_args()
 
     test_gap = args.testgap
@@ -193,9 +150,8 @@ if __name__ == '__main__':
             len(env.action_space), n_features = 2, memory_size = 2000, e_greedy = 0.9)
     elif MODE == AgentType.Sarsa:
         agent = SarsaLambdaTable(actions=env.action_space, e_greedy=0.9)
-    else:
+    elif MODE == AgentType.MSSE:
         agent = MultipleReversal().explore().agent
     endpoints = np.zeros((env.height + 2, env.width + 2), dtype = int)
-    print(type(agent))
     core(test_gap, train_gap, total_iter)
 

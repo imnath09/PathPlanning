@@ -4,6 +4,7 @@ sys.path.append('..')
 
 from Algorithm.QLearning import QLearningTable
 from Maze.gymmaze import *
+from Common.utils import *
 
 import matplotlib.pyplot as plt
 import argparse
@@ -95,9 +96,6 @@ def core(test_gap, train_gap, total_iter, cons):
     plt.savefig('../img/{}.png'.format(get_time()))
     #plt.show()
     plt.close('all')
-
-def get_time():
-    return time.strftime('%m-%d %H.%M.%S', time.localtime())
 
 def encode(pos):
     r = '{},{}'.format(pos[0], pos[1])
