@@ -151,7 +151,10 @@ if __name__ == '__main__':
     elif MODE == AgentType.Sarsa:
         agent = SarsaLambdaTable(actions=env.action_space, e_greedy=0.9)
     elif MODE == AgentType.MSSE:
-        agent = MultipleReversal().explore().agent
+        msse = MultipleReversal()
+        etime = msse.explore()
+        print('total merging time', etime, )
+        agent = msse.agent
     endpoints = np.zeros((env.height + 2, env.width + 2), dtype = int)
     core(test_gap, train_gap, total_iter)
 

@@ -1,10 +1,14 @@
 
+import sys
+sys.path.append('..')
+import argparse
 from MultiSource.MultiBase import *
 
 class MultipleReversal(MultiBase):
-    def __init__(self):
-        MultiBase.__init__(self)
+    def __init__(self, sources = None, mode = 0):
+        MultiBase.__init__(self, sources = sources)
         self.agent = self.srcs[0].agent
+        self.mode = mode # 0:MSSE; 1:RFE; 
 
     def walk(self, src : Source):
         action = src.agent.choose_action(encode(src.cur))
@@ -25,9 +29,11 @@ class MultipleReversal(MultiBase):
         self.move_block(src, next)
 
         # 碰撞（出界）或者满50步，随机跳
-        if done or src.steps == 0: # 碰撞（出界），但没抵达终点。这些情况下随机跳
+        if self.mode == 0 and (done or src.steps == 0): # 碰撞（出界），但没抵达终点。这些情况下随机跳
             src.rjump()
-            #src.cur = src.start
+            self.move_block(src, src.cur)
+        if self.mode == 1 and done:# or src.steps == 0: # 碰撞（出界），但没抵达终点。这些情况下回到起点
+            src.cur = src.start
             self.move_block(src, src.cur)
 
         return src
@@ -63,8 +69,8 @@ class MultipleReversal(MultiBase):
             elif closer(food.start, eater.end, self.destination):
                 eater.end = food.start
 
-        print('{} {} merges {} at {}'.format(
-            datetime.datetime.now(), eater.name, food.name, src.cur))
+        #print('{} {} merges {} at {}'.format(
+        #    datetime.datetime.now(), eater.name, food.name, src.cur))
         eater.cur = src.cur
         eater.points.extend(food.points)
         eater.name = '{}to{}'.format(eater.start, eater.end)
@@ -98,6 +104,35 @@ class MultipleReversal(MultiBase):
     def inner_train(self, src):
         pass
 
+def test(srcs, mode=0):
+    data = []
+    for _ in range(100):
+        ms = MultipleReversal(srcs, mode)
+        td = ms.explore()
+        data.append(td.total_seconds())
+    data1 = [round(x, 2) for x in data]
+    fn = '_'.join(['{}{}'.format(x[0], x[1]) for x in srcs])
+    with open('../img/{}_{}.txt'.format(mode, fn), 'a', encoding='utf-8') as f:
+        f.write('{}={}{}'.format(fn, str(data1), ',\n'))
+
+data = [
+    [np.array([8, 2]),np.array([10, 7]),np.array([15, 14]),],
+    [np.array([8, 2]),np.array([15, 14]),],
+    [np.array([8, 2]),],
+    [np.array([10, 7]),],
+    [np.array([13, 10]),],
+    [np.array([15, 14]),],
+    [np.array([15, 7])],
+    [],
+]
+
+
 if __name__ == '__main__':
-    ms = MultipleReversal()
-    ms.explore()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--n', type=int, )
+    args = parser.parse_args()
+    n = args.n
+
+    test(data[n], mode = 0)
+    STEP_REWARD = -0.01
+    test(data[n], mode = 0)

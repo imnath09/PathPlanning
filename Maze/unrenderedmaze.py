@@ -16,7 +16,7 @@ CRASH_REWARD = -1.0
 STEP_REWARD = -0.001 # 实际使用cosine
 
 END_IF_OUT = False # 出界时是否结束训练
-END_IF_CRASH = False # 碰撞时是否结束训练
+END_IF_CRASH = True # 碰撞时是否结束训练
 
 '''
 REWARD = np.array(
@@ -40,8 +40,8 @@ class UnrenderedMaze():
         self.observation_space_n = 2
         self.new_sln = False
 
-        self.map = InitMap()
-        #self.map = CplxMaze()
+        #self.map = InitMap()
+        self.map = CplxMaze()
         self.walker = self.map.start
         self.obstacles = self.map.obstacles
         self.height = self.map.height

@@ -12,19 +12,24 @@ MERGE = 'merge'
 FOUND = 'found'
 
 class MultiBase(UnrenderedMaze):
-    def __init__(self):
+    def __init__(self, sources = None):
         UnrenderedMaze.__init__(self)
         self.destination = self.map.destination
         self.start = self.map.start
-        #self.agent = None
+        self.agent = None
         self.srcs = [
             Source(self.start, isstart = True),
+            ]
+        if sources == None:# or len(sources) == 0:
+            self.srcs += [
             Source(np.array([8, 2])),
             Source(np.array([10, 7])),
             #Source(np.array([13, 10])),
             Source(np.array([15, 14]))
             #Source(self.destination, isend = True)
             ]
+        else:
+            self.srcs += [Source(x) for x in sources]
     def intersection(self, src : Source):
         for s in self.srcs:
             if not s.name == src.name and s.contain(src.cur):
@@ -36,15 +41,17 @@ class MultiBase(UnrenderedMaze):
                 return s
         return None
     def explore(self):
-        print(len(self.srcs), 'sources')
+        #print(len(self.srcs), 'sources')
         stime = datetime.datetime.now()
-        print(stime, 'start')
+        #print(stime, 'start')
         while True:
             result = self.iterstep()
             if result is not None:
+                self.agent = result.agent
                 etime = datetime.datetime.now()
-                print(etime, 'found. total', etime - stime)
-                return result
+                time_delta = etime - stime
+                #print(etime, 'found. total', time_delta)
+                return time_delta#result
     def iterstep(self):
         '''迭代，让每个source走一步'''
         for src in self.srcs:#[0: -1]:#
