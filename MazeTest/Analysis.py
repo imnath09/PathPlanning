@@ -1,7 +1,8 @@
 
+import random
 import matplotlib.pyplot as plt
 
-fsize = (12, 9)
+fsize = (18, 9)
 
 def analyze(filename):
     with open(filename, 'r', encoding='utf-8') as file1:
@@ -47,70 +48,103 @@ def readfile(fname):
         train_len1 = [float(x) for x in lines[3].split(',')]
     return test_rate1, test_len1, train_rate1, train_len1
 
-def analyze2(f1, f2, f3=''):
-    test_rate1, test_len1, train_rate1, train_len1 = readfile(f1)
-    test_rate2, test_len2, train_rate2, train_len2 = readfile(f2)
-    test_rate3, test_len3, train_rate3, train_len3 = readfile(f3)
+def analyze2(files):
+    datas = [readfile(x) for x in files]
+    #test_rate1, test_len1, train_rate1, train_len1 = readfile(f1)
+    test_rates = [x[0][0:50] for x in datas]
+    test_lens = [x[1][0:50] for x in datas]
+    train_rates = [x[2][0:50] for x in datas]
+    train_lens = [x[3][0:50] for x in datas]
+
+    get_colors = lambda n: list(map(lambda i: "#" + "%06x" % random.randint(0, 0xFFFFFF),range(n)))
+    colors = get_colors(len(files))
+    linestyles = ['-', '--', '-.', ':',]
+    al = 0.7
+    #get_color = lambda : "#" + "%06x" % random.randint(0, 0xFFFFFF)
 
     # 测试成功率
     plt.figure(figsize=fsize)
     plt.suptitle('test rate')
-    plt.plot(range(len(test_rate1)), test_rate1, 'r-', label = f1)
-    plt.plot(range(len(test_rate2)), test_rate2, 'b-', label = f2)
-    if not f3=='':
-        plt.plot(range(len(test_rate3)), test_rate3, 'g-', label = f3)
+    for i in range(len(test_rates)):
+        plt.plot(
+            test_rates[i], colors[i], linestyle = linestyles[i % 4],
+            label = files[i], alpha = al)
     plt.ylabel('test rate')
     plt.xlabel('horizon')
     plt.legend()
     plt.tight_layout()
     plt.savefig('../img/test_rate.png')
+    plt.close()
     # 测试长度
     plt.figure(figsize=fsize)
     plt.suptitle('test length')
-    plt.plot(range(len(test_len1)), test_len1, 'r-', label = f1)
-    plt.plot(range(len(test_len2)), test_len2, 'b-', label = f2)
-    if not f3=='':
-        plt.plot(range(len(test_len3)), test_len3, 'g-', label = f3)
+    for i in range(len(test_lens)):
+        plt.plot(
+            test_lens[i], colors[i], linestyle = linestyles[i % 4],
+            label = files[i], alpha = al)
     plt.ylabel('test length')
     plt.xlabel('horizon')
     plt.legend()
     plt.tight_layout()
     plt.savefig('../img/test_length.png')
+    plt.close()
     # 训练成功率
     plt.figure(figsize=fsize)
     plt.suptitle('train rate')
-    plt.plot(range(len(train_rate1)), train_rate1, 'r-', label = f1)
-    plt.plot(range(len(train_rate2)), train_rate2, 'b-', label = f2)
-    if not f3=='':
-        plt.plot(range(len(train_rate3)), train_rate3, 'g-', label = f3)
+    for i in range(len(train_rates)):
+        plt.plot(
+            train_rates[i], colors[i], linestyle = linestyles[i % 4],
+            label = files[i], alpha = al)
     plt.ylabel('train rate')
     plt.xlabel('horizon')
     plt.legend()
     plt.tight_layout()
     plt.savefig('../img/train_rate.png')
+    plt.close()
     # 训练长度
     plt.figure(figsize=fsize)
     plt.suptitle('train length')
-    plt.plot(range(len(train_len1)), train_len1, 'r-', label = f1)
-    plt.plot(range(len(train_len2)), train_len2, 'b-', label = f2)
-    if not f3=='':
-        plt.plot(range(len(train_len3)), train_len3, 'g-', label = f3)
+    for i in range(len(train_lens)):
+        plt.plot(
+            train_lens[i], colors[i], linestyle = linestyles[i % 4],
+            label = files[i], alpha = al)
     plt.ylabel('train length')
     plt.xlabel('horizon')
     plt.legend()
     plt.tight_layout()
     plt.savefig('../img/train_length.png')
+    plt.close()
     print('finish')
 
 if __name__ == '__main__':
-    d1, t1 = '06-09 20.29.34 tr1000it100ts10\\06-09 20.29.40 tr1000it100ts10 MSSE', 'MSSE'
-    d2, t2 = '06-09 20.29.34 tr1000it100ts10\\06-10 20.50.10 tr1000it100ts10 RFE', 'RFE'
-    d3, t3 = '06-09 20.29.34 tr1000it100ts10\\06-09 20.29.34 tr1000it100ts10 QLearning', 'QLearning'
-    ff1 = '../img/{}/{}.txt'.format(d1, t1)
-    ff2 = '../img/{}/{}.txt'.format(d2, t2)
-    ff3 = '../img/{}/{}.txt'.format(d3, t3)
-    #analyze(ff1)
-    #analyze(ff2)
-    analyze2(ff1,  ff3)
+    rfe = [
+        '../img/{}/{}.txt'.format('06-10 20.50.10 tr1000it100ts10 RFE', 'RFE'),
+        '../img/{}/{}.txt'.format('06-15 19.07.47 tr1000it100ts10 RFE', 'RFE'),
+        '../img/{}/{}.txt'.format('06-15 22.58.01 tr1000it100ts10 RFE', 'RFE'),#左
+        '../img/{}/{}.txt'.format('06-16 14.06.52 tr1000it100ts10 RFE', 'RFE'),#右
+    ]
+    msse = [
+        '../img/{}/{}.txt'.format('06-09 20.29.40 tr1000it100ts10 MSSE', 'MSSE'),
+        '../img/{}/{}.txt'.format('06-15 20.17.54 tr1000it100ts10 MSSE', 'MSSE'),#右
+        '../img/{}/{}.txt'.format('06-15 22.57.38 tr1000it100ts10 MSSE', 'MSSE'),
+        '../img/{}/{}.txt'.format('06-16 14.06.34 tr1000it100ts10 MSSE', 'MSSE'),#左
+    ]
+    qlearning = [
+        '../img/{}/{}.txt'.format('06-09 20.29.34 tr1000it100ts10 QLearning', 'QLearning'),
+        '../img/{}/{}.txt'.format('06-15 20.17.43 tr1000it100ts10 QLearning', 'QLearning'),
+        '../img/{}/{}.txt'.format('06-15 22.56.54 tr1000it100ts10 QLearning', 'QLearning'),#右
+        '../img/{}/{}.txt'.format('06-16 14.06.21 tr1000it100ts10 QLearning', 'QLearning'),#左
+    ]
 
-
+    '''for x in rfe:
+        analyze(x)
+    for x in msse:
+        analyze(x)
+    for x in qlearning:
+        analyze(x)'''
+    #analyze2(rfe + msse + qlearning)
+    analyze2(rfe[2:] + msse[1::2] + qlearning[2:3])
+    #analyze2(rfe[2:])
+    #analyze2(msse[1::2])
+    #analyze2(qlearning[2:])
+    # '-', '--', '-.', ':', 

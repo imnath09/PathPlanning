@@ -5,10 +5,14 @@ import argparse
 from MultiSource.MultiBase import *
 
 class MultipleReversal(MultiBase):
-    def __init__(self, sources = None, mode = 0):
+    def __init__(self, sources = None, mode = 0, expname = ''):
+        '''params:
+        mode: 0-MSSE; 1-RFE;
+        '''
         MultiBase.__init__(self, sources = sources)
         self.agent = self.srcs[0].agent
         self.mode = mode # 0:MSSE; 1:RFE; 
+        self.expname = expname
 
     def walk(self, src : Source):
         action = src.agent.choose_action(encode(src.cur))
@@ -99,7 +103,7 @@ class MultipleReversal(MultiBase):
     def display(self):
         length = str(len(self.srcs))
         for src in self.srcs:
-            guide_table(src.agent.q_table, self.height, self.width, length + src.name)
+            guide_table(src.agent.q_table, self.height, self.width, '{}/{} ({})'.format(self.expname, length, src.name))
 
     def inner_train(self, src):
         pass
@@ -116,14 +120,14 @@ def test(srcs, mode=0):
         f.write('{}={}{}'.format(fn, str(data1), ',\n'))
 
 data = [
-    [np.array([8, 2]),np.array([10, 7]),np.array([15, 14]),],
-    [np.array([8, 2]),np.array([15, 14]),],
-    [np.array([8, 2]),],
-    [np.array([10, 7]),],
-    [np.array([13, 10]),],
-    [np.array([15, 14]),],
-    [np.array([15, 7])],
-    [],
+    [np.array([8, 2]),np.array([10, 7]),np.array([15, 14]),], # 0
+    [np.array([8, 2]),np.array([15, 14]),], # 1
+    [np.array([8, 2]),], # 2
+    [np.array([10, 7]),], # 3
+    [np.array([13, 10]),], # 4
+    [np.array([15, 14]),], # 5
+    [np.array([15, 7])], # 6
+    [], #7
 ]
 
 

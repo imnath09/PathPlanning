@@ -6,6 +6,7 @@ class AgentType(Enum):
     QLearning = 1
     Sarsa = 2
     MSSE = 3
+    RFE = 4
 
 DIRECTION = [
     np.array([-1, 0]),
