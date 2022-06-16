@@ -10,7 +10,6 @@ class MultipleReversal(MultiBase):
         mode: 0-MSSE; 1-RFE;
         '''
         MultiBase.__init__(self, sources = sources)
-        self.agent = self.srcs[0].agent
         self.mode = mode # 0:MSSE; 1:RFE; 
         self.expname = expname
 

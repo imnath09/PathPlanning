@@ -34,21 +34,25 @@ class MSSETester():
     def core(self, test_gap, train_gap, total_iter):
         test_rate = [] # 成功率
         test_len = [] # 平均长度
+        test_reward = []
         train_rate = []
         train_len = []
+        train_reward = []
 
         self.train_info = '0 {} /\n'.format(get_time())
 
         for i in range(1, 1 + total_iter):
-            train = self.Batch(isTrain = True, gap = train_gap)
+            train, re = self.Batch(isTrain = True, gap = train_gap)
             train_rate.append(len(train) / train_gap)
             arvlen = sum(train) / len(train) if len(train) > 0 else 0
             train_len.append(arvlen)
+            train_reward.append(sum(re) / len(re))
 
-            test = self.Batch(isTrain = False, gap = test_gap)
+            test, re = self.Batch(isTrain = False, gap = test_gap)
             test_rate.append(len(test) / test_gap)
             arvlen = sum(test) / len(test) if len(test) > 0 else 0
             test_len.append(arvlen)
+            test_reward.append(sum(re) / len(re))
 
             if i % 10 == 0: # 只是为了看到进度的，有没有都行
                 print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
@@ -61,12 +65,16 @@ class MSSETester():
             f.write(','.join([str(round(x, 2)) for x in test_len]) + '\n')
             f.write(','.join([str(x) for x in train_rate]) + '\n')
             f.write(','.join([str(round(x, 2)) for x in train_len]) + '\n')
+            f.write(','.join([str(round(x, 3)) for x in test_reward]) + '\n')
+            f.write(','.join([str(round(x, 3)) for x in train_reward]) + '\n')
             f.write(self.train_info)
 
     def Batch(self, isTrain, gap):
         path_len = [] # 记录成功时的路径长度
+        accum_reward = [] # 记录累计奖励
         for episode in range(1, gap + 1):
             observation = self.env.reset()
+            total_reward = 0
 
             # one trial
             for _ in range(500):
@@ -76,6 +84,7 @@ class MSSETester():
                 if isTrain:
                     self.agent.learn(encode(observation), action, reward, encode(observation_), done)
                 observation = observation_
+                total_reward += reward
 
                 self.env.render()
                 if done:
@@ -89,8 +98,9 @@ class MSSETester():
                             self.train_info += "epi-{}{} path:{} {}\n".format('t' if isTrain else 'f', episode, length, '-'.join([str(x) for x in self.env.cur_path]))
                     break
             # enf of while(one trial)
+            accum_reward.append(total_reward)
         # enf of for(trial process)
-        return path_len
+        return path_len, accum_reward
 
 data = [
     [np.array([8, 2]),np.array([10, 7]),np.array([15, 14]),],
@@ -109,7 +119,7 @@ if __name__ == '__main__':
     parser.add_argument('--traingap', type=int, default=1000)
     parser.add_argument('--iter', type=int, default=100)
     parser.add_argument('--mode', type=int, help = 'mode:1-QLearning;4-RFE;3-MSSE')
-    parser.add_argument('--n', type=int)
+    parser.add_argument('--n', type=int, default=0)
     args = parser.parse_args()
 
     test_gap = args.testgap

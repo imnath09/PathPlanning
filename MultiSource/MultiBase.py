@@ -17,6 +17,7 @@ class MultiBase(UnrenderedMaze):
         self.destination = self.map.destination
         self.start = self.map.start
         self.agent = None
+        self.finalsource = None
         self.srcs = [
             Source(self.start, isstart = True),
             ]
@@ -45,9 +46,10 @@ class MultiBase(UnrenderedMaze):
         stime = datetime.datetime.now()
         #print(stime, 'start')
         while True:
-            result = self.iterstep()
-            if result is not None:
-                self.agent = result.agent
+            source = self.iterstep()
+            if source is not None:
+                self.finalsource = source
+                self.agent = source.agent
                 etime = datetime.datetime.now()
                 time_delta = etime - stime
                 #print(etime, 'found. total', time_delta)
@@ -55,9 +57,9 @@ class MultiBase(UnrenderedMaze):
     def iterstep(self):
         '''迭代，让每个source走一步'''
         for src in self.srcs:#[0: -1]:#
-            result = self.walk(src)
-            if result.isstart and result.isend:
-                return result
+            source = self.walk(src)
+            if source.isstart and source.isend:
+                return source
         return None
     def walk(self, src : Source):
         '''每个source走一步'''
