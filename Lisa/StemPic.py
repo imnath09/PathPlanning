@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-from data3 import *
+from data2 import *
 
 def getVIPColor(value):
     if value < 2:
@@ -23,6 +23,7 @@ if __name__ == '__main__':
 
     linecolors = []
     markercolors = []
+    plt.figure(figsize=(10,10))
     for i in range(LENGTH):
         #plt.annotate(symbol[i], xy=(LOG_FOLDCHANGE[i], i - 0.35))
 
@@ -31,13 +32,13 @@ if __name__ == '__main__':
             markercolors.append(COLOR[0][getVIPColor(VIP[i])])
             plt.annotate(
                 symbol[i], xy=(LOG_FOLDCHANGE[i], i),
-                xytext=(LOG_FOLDCHANGE[i] - 3, i - 0.315))
+                xytext=(LOG_FOLDCHANGE[i] - 0.5, i - 0.25))
         else:
             linecolors.append('red')
             markercolors.append(COLOR[1][getVIPColor(VIP[i])])
             plt.annotate(
                 symbol[i], xy=(LOG_FOLDCHANGE[i], i),
-                xytext=(LOG_FOLDCHANGE[i] + 1, i - 0.315))
+                xytext=(LOG_FOLDCHANGE[i] + 0.3, i - 0.25))
 
     plt.hlines(
         y=compound_name, xmin=0, xmax=LOG_FOLDCHANGE,
@@ -56,12 +57,13 @@ if __name__ == '__main__':
     m3 = max(abs(m1), abs(m2))
     print(m3)
 
-    plt.xlim(-m3 - 3, m3 + 3)
+    plt.xlim(-m3 - 1, m3 + 1)
     plt.xlabel('log2 Fold Change')
     plt.ylabel('MS2 name')
 
     plt.tight_layout()
 
-    plt.show()
+    plt.savefig(filename)
+    plt.close()
 
 
