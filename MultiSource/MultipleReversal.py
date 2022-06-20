@@ -7,11 +7,12 @@ from MultiSource.MultiBase import *
 class MultipleReversal(MultiBase):
     def __init__(self, sources = None, mode = 0, expname = ''):
         '''params:
-        mode: 0-MSSE; 1-RFE;
+        mode: 0-随机跳转; 1-不随机跳转;
         '''
         MultiBase.__init__(self, sources = sources)
-        self.mode = mode # 0:MSSE; 1:RFE; 
+        self.mode = mode
         self.expname = expname
+        self.jumpgap = 100 if mode == 0 else 500
 
     def walk(self, src : Source):
         action = src.agent.choose_action(encode(src.cur))
@@ -21,22 +22,22 @@ class MultipleReversal(MultiBase):
             src = self.trymerge(src, next)
 
         src.agent.learn(encode(src.cur), action, reward, encode(next), done)
-        if reward > 0:
-            src.agent.learn(encode(next), ops(action), -reward, encode(src.cur), False)
+        #if reward > 0:
+        #    src.agent.learn(encode(next), ops(action), -reward, encode(src.cur), False)
         # 反向q函数的思路不行
         #src.ragent.check_state_exist(encode(next))
         #src.ragent.learn(encode(next), ops(action), reward, encode(src.cur), done)
 
-        src.steps = (1 + src.steps) % 100
+        src.steps = (1 + src.steps) % self.jumpgap
         src.cur = next
         self.move_block(src, next)
 
-        # 碰撞（出界）或者满50步，随机跳
-        if self.mode == 0 and (done or src.steps == 0): # 碰撞（出界），但没抵达终点。这些情况下随机跳
-            src.rjump()
-            self.move_block(src, src.cur)
-        if self.mode == 1 and done:# or src.steps == 0: # 碰撞（出界），但没抵达终点。这些情况下回到起点
-            src.cur = src.start
+        # 碰撞（出界）或者满jumpgap步，随机跳
+        if done or src.steps == 0: # 碰撞（出界），但没抵达终点。这些情况下随机跳
+            if self.mode == 0:
+                src.rjump()
+            else:
+                src.cur = src.start
             self.move_block(src, src.cur)
 
         return src
@@ -84,7 +85,7 @@ class MultipleReversal(MultiBase):
         eater.agent.q_table = self.merge_qtable(eater.agent.q_table, food.agent.q_table)
 
         self.srcs.remove(food)
-        self.display()
+        #self.display()
         self.inner_train(eater)
         return eater
 
@@ -107,35 +108,64 @@ class MultipleReversal(MultiBase):
     def inner_train(self, src):
         pass
 
-def test(srcs, mode=0):
+'''跑完再写文档'''
+def test(srcs, mode):
     data = []
     for _ in range(100):
         ms = MultipleReversal(srcs, mode)
         td = ms.explore()
         data.append(td.total_seconds())
     data1 = [round(x, 2) for x in data]
-    fn = '_'.join(['{}{}'.format(x[0], x[1]) for x in srcs])
-    with open('../img/{}_{}.txt'.format(mode, fn), 'a', encoding='utf-8') as f:
-        f.write('{}={}{}'.format(fn, str(data1), ',\n'))
+    fname = ename(mode, srcs)
+    with open('../img/{}.txt'.format(fname), 'a', encoding='utf-8') as f:
+        f.write('\'{}\':{}{}'.format(fname, str(data1), ',\n'))
 
-data = [
+'''有结果马上写文档里'''
+def test1(srcs, mode):
+    fname = ename(mode, srcs)
+    for _ in range(100):
+        ms = MultipleReversal(srcs, mode)
+        td = ms.explore()
+        with open('../img/{}.txt'.format(fname), 'a', encoding='utf-8') as f:
+            f.write(str(round(td.total_seconds(), 2)) + ',')
+
+srcdata = [
     [np.array([8, 2]),np.array([10, 7]),np.array([15, 14]),], # 0
     [np.array([8, 2]),np.array([15, 14]),], # 1
-    [np.array([8, 2]),], # 2
-    [np.array([10, 7]),], # 3
-    [np.array([13, 10]),], # 4
-    [np.array([15, 14]),], # 5
-    [np.array([15, 7])], # 6
+    [np.array([15, 14]),], # 2
+    [np.array([13, 10]),], # 3
+    [np.array([15, 7])], # 4
+    [np.array([10, 7]),], # 5
+    [np.array([8, 2]),], # 6
     [], #7
 ]
 
+def ename(mode, srcs):
+    if mode == 0 and len(srcs) == 0:
+        return 'SE'
+    elif mode == 0 and len(srcs) > 0:
+        n = 'SPaSE{}'.format(len(srcs) + 1)
+        for s in srcs:
+            n += '_{}{}'.format(s[0], s[1])
+        return n
+    elif mode == 1 and len(srcs) == 0:
+        return 'RFE'
+    elif mode == 1 and len(srcs) > 0:
+        n = 'SP{}'.format(len(srcs) + 1)
+        for s in srcs:
+            n += '_{}{}'.format(s[0], s[1])
+        return n
+    else:
+        return 'QLearning'
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--n', type=int, )
+    parser.add_argument('--mode', type=int, default=0, help='0随机 1不随机')
     args = parser.parse_args()
+    mode = args.mode
     n = args.n
 
-    test(data[n], mode = 0)
-    STEP_REWARD = -0.01
-    test(data[n], mode = 0)
+    test1(srcdata[n], mode)
+    #STEP_REWARD = -0.01
+    #test1(srcdata[n], mode )

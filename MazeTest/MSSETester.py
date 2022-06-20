@@ -5,29 +5,43 @@ sys.path.append('..')
 
 from MultiSource.MultipleReversal import *
 
+'''
+1.qlearning，Qlearning
+2.RFE，srcs=[],mode=1
+3.SE，srcs=[],mode=0
+4.SP，srcs=[...],mode=1
+5.SPaSE，srcs=[...],mode=0
+
+空间划分消融:space partition
+1.一个源，500步后回到起点，直接规划终点——qlearning
+2.一个源，500步后回到起点，先合并，再规划终点——RFE
+4.多个源，500步后回到起点，先合并，再规划终点——space partition
+
+随机探索消融:stochastic exploration
+1.一个源，500步后回到起点，直接规划终点——qlearning
+2.一个源，500步后回到起点，先合并，再规划终点——RFE
+3.一个源，100步后随机跳转，先合并，再规划终点——stochastic exploration
+'''
+
 class MSSETester():
-    def __init__(self, mode : AgentType, sources = None):
-        '''
-        mode : 1-QLearning; 4-RFE; 3-MSSE
-        '''
-        self.expname = '{} tr{}it{}ts{} {}'.format(get_time(), train_gap, total_iter, test_gap, mode.name)
+    def __init__(self, mode, sources):
+        fname = ename(mode, sources)
+        self.expname = '{} tr{}it{}ts{} {}'.format(fname, train_gap, total_iter, test_gap, get_time())
         self.mode = mode
         os.makedirs('../img/{}'.format(self.expname))
         print(self.expname, 'begin')
 
         self.env = UnrenderedMaze()
-        if mode == AgentType.QLearning:
+        if mode == 2:
             self.agent = QLearningTable(actions=self.env.action_space, e_greedy=0.9)
-        elif mode == AgentType.RFE:
-            msse = MultipleReversal(sources = sources, mode = 1, expname = self.expname)
+        else:
+            msse = MultipleReversal(sources = sources, mode = mode, expname = self.expname)
             etime = msse.explore()
             print('total merging time', etime)
             self.agent = msse.agent
-        elif mode == AgentType.MSSE:
-            msse = MultipleReversal(sources = sources, mode = 0, expname = self.expname)
-            etime = msse.explore()
-            print('total merging time', etime)
-            self.agent = msse.agent
+            with open('../img/{}/merge.txt'.format(self.expname), 'w', encoding='utf-8') as f:
+                f.write(str(etime))
+
         self.endpoints = np.zeros((self.env.height + 2, self.env.width + 2), dtype = int)
 
 
@@ -58,9 +72,9 @@ class MSSETester():
                 print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
             self.train_info = '{}{} {} {}\n'.format(self.train_info, i, get_time(), len(test) / test_gap)
 
-        print(self.endpoints)
+        #print(self.endpoints)
         guide_table(self.agent.q_table, self.env.height, self.env.width, '{}/guide'.format(self.expname), cmap='rainbow')
-        with open('../img/{}/{}.txt'.format(self.expname, self.mode.name), 'w', encoding='utf-8') as f:
+        with open('../img/{}/data.txt'.format(self.expname), 'w', encoding='utf-8') as f:
             f.write(','.join([str(x) for x in test_rate]) + '\n')
             f.write(','.join([str(round(x, 2)) for x in test_len]) + '\n')
             f.write(','.join([str(x) for x in train_rate]) + '\n')
@@ -102,32 +116,22 @@ class MSSETester():
         # enf of for(trial process)
         return path_len, accum_reward
 
-data = [
-    [np.array([8, 2]),np.array([10, 7]),np.array([15, 14]),],
-    [np.array([8, 2]),np.array([15, 14]),],
-    [np.array([8, 2]),],
-    [np.array([10, 7]),],
-    [np.array([13, 10]),],
-    [np.array([15, 14]),],
-    [np.array([15, 7])],
-    [],
-]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--testgap', type=int, default=10)
     parser.add_argument('--traingap', type=int, default=1000)
     parser.add_argument('--iter', type=int, default=100)
-    parser.add_argument('--mode', type=int, help = 'mode:1-QLearning;4-RFE;3-MSSE')
+    parser.add_argument('--mode', type=int, help = 'mode:0-随机;1-不随机;2-qlearning')
     parser.add_argument('--n', type=int, default=0)
     args = parser.parse_args()
 
     test_gap = args.testgap
     train_gap = args.traingap
     total_iter = args.iter
-    mode = AgentType(args.mode)
+    mode = args.mode
     n = args.n
-    msse = MSSETester(mode=mode, sources = data[n])
+    msse = MSSETester(mode=mode, sources = srcdata[n])
     msse.core(test_gap, train_gap, total_iter)
 
 
