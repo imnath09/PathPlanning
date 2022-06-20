@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     linecolors = []
     markercolors = []
-    plt.figure(figsize=(10,10))
+    plt.figure(figsize=(14, 10))
     for i in range(LENGTH):
         #plt.annotate(symbol[i], xy=(LOG_FOLDCHANGE[i], i - 0.35))
 
@@ -42,13 +42,13 @@ if __name__ == '__main__':
 
     plt.hlines(
         y=compound_name, xmin=0, xmax=LOG_FOLDCHANGE,
-        color=linecolors, alpha=1, linewidth=1)
+        color=linecolors, alpha=1, linewidth=4)
 
     plt.vlines(
-        x=0, ymin=0, ymax=LENGTH, color='Pink'
+        x=0, ymin=-1, ymax=LENGTH, color='Gray'
     )
 
-    plt.scatter(LOG_FOLDCHANGE, compound_name, color=markercolors, s=15, alpha=0.6)
+    plt.scatter(LOG_FOLDCHANGE, compound_name, color=markercolors, s=240, alpha=0.6)
 
     m1 = max(LOG_FOLDCHANGE)
     print(m1)
@@ -58,12 +58,17 @@ if __name__ == '__main__':
     print(m3)
 
     plt.xlim(-m3 - 1, m3 + 1)
-    plt.xlabel('log2 Fold Change')
-    plt.ylabel('MS2 name')
+    plt.ylim(-1, LENGTH)
+    s=20
+    plt.xlabel('log2 Fold Change', size = s)
+    plt.ylabel('MS2 name', size = s)
+    plt.yticks(fontproperties='Arial', size=s)#设置大小及加粗
+    plt.xticks(fontproperties='Arial', size=s)
 
     plt.tight_layout()
 
     plt.savefig(filename)
+    plt.show()
     plt.close()
 
 
