@@ -84,66 +84,72 @@ def analyze2(files):
 if __name__ == '__main__':
     def fn(a):
         return '../img/{}/data.txt'.format(a)
-    def getdir():
-        for o, d, f in os.walk('d:\\code\\pathplanning\\img'):
+    def getdir(d=''):
+        if d == '':
+            d = 'd:\\code\\pathplanning\\img'
+        for o, d, f in os.walk(d):
             return d
-    s =[
- '06-17 16.24.46 tr1000it100ts10 ql',
- '06-17 16.25.42 tr1000it100ts10 spase4',
- '06-17 21.06.30 tr1000it100ts10 m2n4 1QLearning',
- '06-17 21.07.03 tr1000it100ts10 m1n1 2RFE',
- '06-17 21.08.34 tr1000it100ts10 m0n1 3SE',
- '06-17 21.09.02 tr1000it100ts10 m1n4 4SP',
- '06-17 21.09.30 tr1000it100ts10 m0n4 5SPASE',
- '06-17 23.04.29 tr1000it100ts10 m0n4 spase',
- '06-17 23.04.36 tr1000it100ts10 m1n4 sp',
- '06-17 23.04.39 tr1000it100ts10 m0n1 se',
- '06-17 23.04.42 tr1000it100ts10 m1n1 rfe',
- '06-17 23.04.45 tr1000it100ts10 m2n4 ql',
- '06-18 00.14.03 tr1000it100ts10 ql',
- '06-18 00.14.15 tr1000it100ts10 rfe',
- '06-18 00.14.18 tr1000it100ts10 se',
- '06-18 00.14.20 tr1000it100ts10 sp4',
- '06-18 00.14.23 tr1000it100ts10 spase4',
- '06-18 00.20.33 tr1000it100ts10 sp2',
- '06-18 00.23.02 tr1000it100ts10 spase3',
- '06-18 00.23.18 tr1000it100ts10 spase2',
- '06-18 00.23.36 tr1000it100ts10 spase2',
- '06-18 00.24.06 tr1000it100ts10 spase2',
- '06-18 00.24.20 tr1000it100ts10 spase2',
- '06-18 00.24.33 tr1000it100ts10 spase2',
- 'QLearning tr1000it100ts10 06-18 17.28.37',
- 'RFE tr1000it100ts10 06-18 17.32.12',
- 'SE tr1000it100ts10 06-18 17.31.31',
- 'SP2_1514 tr1000it100ts10 06-18 17.32.03',
- 'SP4_82_107_1514 tr1000it100ts10 06-18 17.31.52',
- 'SPaSE2_1514 tr1000it100ts10 06-18 17.31.14',
- 'SPaSE4_82_107_1514 tr1000it100ts10 06-18 17.30.58']
+    alle =[
+'06-17 16.24.46 tr1000it100ts10 ql',
+'06-17 16.25.42 tr1000it100ts10 spase4',
+'06-17 21.06.30 tr1000it100ts10 m2n4 1QLearning',
+'06-17 21.07.03 tr1000it100ts10 m1n1 2RFE',
+'06-17 21.08.34 tr1000it100ts10 m0n1 3SE',
+'06-17 21.09.02 tr1000it100ts10 m1n4 4SP',
+'06-17 21.09.30 tr1000it100ts10 m0n4 5SPASE',
+'06-17 23.04.29 tr1000it100ts10 m0n4 spase',
+'06-17 23.04.36 tr1000it100ts10 m1n4 sp',
+'06-17 23.04.39 tr1000it100ts10 m0n1 se',
+'06-17 23.04.42 tr1000it100ts10 m1n1 rfe',
+'06-17 23.04.45 tr1000it100ts10 m2n4 ql',
+'06-18 00.14.03 tr1000it100ts10 ql',
+'06-18 00.14.15 tr1000it100ts10 rfe',
+'06-18 00.14.18 tr1000it100ts10 se',
+'06-18 00.14.20 tr1000it100ts10 sp4',
+'06-18 00.14.23 tr1000it100ts10 spase4',
+'06-18 00.20.33 tr1000it100ts10 sp2',
+'06-18 00.23.02 tr1000it100ts10 spase3',
+'06-18 00.23.18 tr1000it100ts10 spase2',
+'06-18 00.23.36 tr1000it100ts10 spase2',
+'06-18 00.24.06 tr1000it100ts10 spase2',
+'06-18 00.24.20 tr1000it100ts10 spase2',
+'06-18 00.24.33 tr1000it100ts10 spase2',
+'06-18 17.28.37 tr1000it100ts10 QLearning',
+'06-18 17.30.58 tr1000it100ts10 SPaSE4_82_107_1514',
+'06-18 17.31.14 tr1000it100ts10 SPaSE2_1514',
+'06-18 17.31.31 tr1000it100ts10 SE',
+'06-18 17.31.52 tr1000it100ts10 SP4_82_107_1514',
+'06-18 17.32.03 tr1000it100ts10 SP2_1514',
+'06-18 17.32.12 tr1000it100ts10 RFE',
+'06-20 22.11.01 tr1000it100ts10 QLearning',
+'06-20 22.11.26 tr1000it100ts10 SPaSE4_82_107_1514',
+'06-20 22.11.53 tr1000it100ts10 SPaSE2_1514',
+'06-20 22.12.05 tr1000it100ts10 SE',
+'06-20 22.12.18 tr1000it100ts10 RFE',
+'06-20 22.12.30 tr1000it100ts10 SP2_1514',
+'06-20 22.12.40 tr1000it100ts10 SP4_82_107_1514']
 
     good =[
-'06-17 23.04.36 tr1000it100ts10 m1n4 sp',
 '06-18 00.20.33 tr1000it100ts10 sp2',
-'SP2_1514 tr1000it100ts10 06-18 17.32.03',
+'06-20 22.12.30 tr1000it100ts10 SP2_1514',
+'06-18 17.32.03 tr1000it100ts10 SP2_1514',
+
+'06-17 23.04.36 tr1000it100ts10 m1n4 sp',
+
 '06-17 21.07.03 tr1000it100ts10 m1n1 2RFE',
 '06-17 23.04.42 tr1000it100ts10 m1n1 rfe',
-'RFE tr1000it100ts10 06-18 17.32.12',
+'06-18 17.32.12 tr1000it100ts10 RFE',
 '06-18 00.14.15 tr1000it100ts10 rfe',
+'06-20 22.12.18 tr1000it100ts10 RFE',
 ]
 
+    l=getdir()
+    l = [x for x in l if x.find('500') >= 0]
 
+    bad = list(set(alle).difference(set(good)))
 
-    '''
-    for x in rfe:
-        analyze(x)
-    for x in msse:
-        analyze(x)
-    for x in ql:
-        analyze(x)
-    '''
-    #analyze2(rfe + msse + ql)
     #for x in ssss:
     #    analyze(x)
+    analyze2([fn(x) for x in bad])
+    #analyze2([fn(x) for x in bad])
 
-    #print(getdir())
-    analyze2([fn(x) for x in good])
-    #analyze2([rfe1[4], msse1[4], qlearning1[4]])

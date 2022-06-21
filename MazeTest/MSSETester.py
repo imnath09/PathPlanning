@@ -26,8 +26,9 @@ from MultiSource.MultipleReversal import *
 class MSSETester():
     def __init__(self, mode, sources):
         fname = ename(mode, sources)
-        self.expname = '{} tr{}it{}ts{} {}'.format(fname, train_gap, total_iter, test_gap, get_time())
+        self.expname = '{} tr{}it{}ts{} {}'.format(get_time(), train_gap, total_iter, test_gap, fname, )
         self.mode = mode
+        self.sources = sources
         os.makedirs('../img/{}'.format(self.expname))
         print(self.expname, 'begin')
 
@@ -37,10 +38,10 @@ class MSSETester():
         else:
             msse = MultipleReversal(sources = sources, mode = mode, expname = self.expname)
             etime = msse.explore()
-            print('total merging time', etime)
+            #print('total merge time', etime)
             self.agent = msse.agent
-            with open('../img/{}/merge.txt'.format(self.expname), 'w', encoding='utf-8') as f:
-                f.write(str(etime))
+            with open('../img/{}/merge.txt'.format(self.expname), 'a', encoding='utf-8') as f:
+                f.write('total merge time {}\n'.format(etime))
 
         self.endpoints = np.zeros((self.env.height + 2, self.env.width + 2), dtype = int)
 
@@ -54,6 +55,8 @@ class MSSETester():
         train_reward = []
 
         self.train_info = '0 {} /\n'.format(get_time())
+        stime = datetime.datetime.now()
+        cvgtime = None
 
         for i in range(1, 1 + total_iter):
             train, re = self.Batch(isTrain = True, gap = train_gap)
@@ -63,14 +66,19 @@ class MSSETester():
             train_reward.append(sum(re) / len(re))
 
             test, re = self.Batch(isTrain = False, gap = test_gap)
-            test_rate.append(len(test) / test_gap)
+            trate = len(test) / test_gap
+            test_rate.append(trate)
+            if trate < 1.0:
+                cvgtime = None
+            elif cvgtime is None:
+                cvgtime = datetime.datetime.now()
             arvlen = sum(test) / len(test) if len(test) > 0 else 0
             test_len.append(arvlen)
             test_reward.append(sum(re) / len(re))
 
-            if i % 10 == 0: # 只是为了看到进度的，有没有都行
-                print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
-            self.train_info = '{}{} {} {}\n'.format(self.train_info, i, get_time(), len(test) / test_gap)
+            #if i % 10 == 0: # 只是为了看到进度的，有没有都行
+            #    print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
+            self.train_info = '{}{} {} {}\n'.format(self.train_info, i, get_time(), trate)
 
         #print(self.endpoints)
         guide_table(self.agent.q_table, self.env.height, self.env.width, '{}/guide'.format(self.expname), cmap='rainbow')
@@ -82,6 +90,11 @@ class MSSETester():
             f.write(','.join([str(round(x, 3)) for x in test_reward]) + '\n')
             f.write(','.join([str(round(x, 3)) for x in train_reward]) + '\n')
             f.write(self.train_info)
+        cvg = (cvgtime - stime) if cvgtime is not None else (stime - stime)
+        with open('../img/{}/merge.txt'.format(self.expname), 'a', encoding='utf-8') as f:
+            f.write('total converge time {}\n'.format(cvg))
+        with open('../img/{}.txt'.format(ename(self.mode, self.sources)), 'a', encoding='utf-8') as f:
+            f.write('{}, '.format(round(cvg.total_seconds(), 2)))
 
     def Batch(self, isTrain, gap):
         path_len = [] # 记录成功时的路径长度
