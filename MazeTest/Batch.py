@@ -3,6 +3,7 @@ import os
 import random
 import time
 
+# 记得执行脚本之前也要加nohup
 
 cmd = 'nohup python MSSETester.py --mode {} --n {} --traingap {} --iter {} --testgap {} >>../img/train.log 2>&1 &'
 
