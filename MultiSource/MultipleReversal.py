@@ -86,7 +86,7 @@ class MultipleReversal(MultiBase):
 
         self.srcs.remove(food)
         #self.display()
-        self.inner_train(eater)
+        #self.inner_train(eater)
         return eater
 
     def merge_qtable(self, eater, droper):
@@ -105,8 +105,23 @@ class MultipleReversal(MultiBase):
         for src in self.srcs:
             guide_table(src.agent.q_table, self.height, self.width, '{}/{} ({})'.format(self.expname, length, src.name))
 
-    def inner_train(self, src):
-        pass
+    def inner_train(self):
+        self.finalsource.steps = 0
+        self.finalsource.cur = self.start
+        stime = datetime.datetime.now()
+        while True:
+            action = self.finalsource.agent.choose_action(encode(self.finalsource.cur))
+            reward, done, info, next = super().step(self.finalsource, action)
+            self.finalsource.agent.learn(encode(self.finalsource.cur), action, reward, encode(next), done)
+
+            if info == FOUND:
+                etime = datetime.datetime.now()
+                return etime - stime
+            self.finalsource.steps = (1 + self.finalsource.steps) % 500
+            if done or self.finalsource.steps == 0:
+                self.finalsource.cur = self.start
+            else:
+                self.finalsource.cur = next
 
 '''跑完再写文档'''
 def test(srcs, mode):
@@ -117,7 +132,7 @@ def test(srcs, mode):
         data.append(td.total_seconds())
     data1 = [round(x, 2) for x in data]
     fname = ename(mode, srcs)
-    with open('../img/{}.txt'.format(fname), 'a', encoding='utf-8') as f:
+    with open('../img/{}merge.txt'.format(fname), 'a', encoding='utf-8') as f:
         f.write('\'{}\':{}{}'.format(fname, str(data1), ',\n'))
 
 '''有结果马上写文档里'''
@@ -125,9 +140,10 @@ def test1(srcs, mode):
     fname = ename(mode, srcs)
     for _ in range(100):
         ms = MultipleReversal(srcs, mode)
-        td = ms.explore()
-        with open('../img/{}.txt'.format(fname), 'a', encoding='utf-8') as f:
-            f.write(str(round(td.total_seconds(), 2)) + ',')
+        td1 = ms.explore()
+        td2 = ms.inner_train()
+        with open('../img/{}merge.txt'.format(fname), 'a', encoding='utf-8') as f:
+            f.write('{},\n'.format([td1.total_seconds(), td2.total_seconds()]))
 
 srcdata = [
     [np.array([8, 2]),np.array([10, 7]),np.array([15, 14]),], # 0
