@@ -93,7 +93,7 @@ class MultiBase(UnrenderedMaze):
             info = FOUND if src.isstart else ARRIVE
         # 抵达源内部终点
         elif (next == src.end).all():
-            reward = ARRIVE_REWARD / 1000
+            reward = MERGE_REWARD
             done = True
             info = ARRIVE
         # 正常移动

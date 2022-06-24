@@ -11,9 +11,9 @@ from gym.envs.classic_control import rendering
 PIXEL = 30
 
 class RenderMap(gym.Env, MultipleReversal):
-    def __init__(self):
+    def __init__(self, sources = None, mode = 0, expname = ''):
         gym.Env.__init__(self)
-        super().__init__()
+        super().__init__(sources, mode, expname)
         # super(子类，self).__init__(参数1，参数2，....) 或者 super().__init__(参数1，参数2，....)
         # 父类.__init__(self,参数1，参数2，...)
 
@@ -88,6 +88,12 @@ class RenderMap(gym.Env, MultipleReversal):
         return pl
 
 if __name__ == '__main__':
-    rm = RenderMap()
+    rm = RenderMap(sources=[
+        np.array([15, 14]),
+        np.array([13, 13]),
+    ])
+    s = datetime.datetime.now()
     rm.explore()
+    f = datetime.datetime.now()
+    print(f-s)
     input('press any key to exit')

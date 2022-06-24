@@ -154,6 +154,7 @@ srcdata = [
     [np.array([10, 7]),], # 5
     [np.array([8, 2]),], # 6
     [], #7
+    [np.array([13, 10]),np.array([13, 13]),np.array([15, 14]),], # 8
 ]
 
 def ename(mode, srcs):

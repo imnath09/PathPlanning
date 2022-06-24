@@ -28,9 +28,13 @@ def draw(title, datas, colors, labels, savename, linestyles = linestyle1):
     for i in range(len(datas)):
         plt.plot(
             datas[i], colors[i], linestyle = linestyles[i % 4],
-            label = labels[i], alpha = al)
+            alpha = al,
+            label = labels[i],
+            )
     plt.ylabel(title)
     plt.xlabel('horizon')
+    #plt.ylim(-0.05,0.7)
+    plt.grid(visible=True,axis='x')
     plt.legend()
     plt.tight_layout()
     plt.savefig(savename)
@@ -53,7 +57,7 @@ def analyze2(files):
     #get_color = lambda : "#" + "%06x" % random.randint(0, 0xFFFFFF)
     get_colors = lambda n: list(map(lambda i: "#" + "%06x" % random.randint(0, 0xFFFFFF),range(n)))
     colors = get_colors(len(datas))
-    sx = 50
+    sx = 120
 
     # 测试成功率
     test_rates = [x[0][0:sx] for x in datas]
@@ -81,75 +85,65 @@ def analyze2(files):
 
     print('finish')
 
+def analyze3(files, fname):
+    files = [x for x in files if x.find(fname) >= 0]
+    datas = [readfile(x) for x in files] # 数量是文本数量
+    #test_rate, test_len, train_rate, train_len, test_reward, train_reward = readfile(f1)
+
+    #get_color = lambda : "#" + "%06x" % random.randint(0, 0xFFFFFF)
+    get_colors = lambda n: list(map(lambda i: "#" + "%06x" % random.randint(0, 0xFFFFFF),range(n)))
+    colors = get_colors(len(datas))
+    sx = 120
+
+    # 测试成功率
+    train_rates = [x[2][0:sx] for x in datas]
+    draw('train rates', train_rates, colors, files, '../img/{}.png'.format(fname))
+
+    print('finish')
+
 if __name__ == '__main__':
-    def fn(a):
-        return '../img/{}/data.txt'.format(a)
     def getdir(d=''):
         if d == '':
             d = 'd:\\code\\pathplanning\\img'
         for o, d, f in os.walk(d):
-            return d
-    alle =[
-'06-17 16.24.46 tr1000it100ts10 ql',
-'06-17 16.25.42 tr1000it100ts10 spase4',
-'06-17 21.06.30 tr1000it100ts10 m2n4 1QLearning',
-'06-17 21.07.03 tr1000it100ts10 m1n1 2RFE',
-'06-17 21.08.34 tr1000it100ts10 m0n1 3SE',
-'06-17 21.09.02 tr1000it100ts10 m1n4 4SP',
-'06-17 21.09.30 tr1000it100ts10 m0n4 5SPASE',
-'06-17 23.04.29 tr1000it100ts10 m0n4 spase',
-'06-17 23.04.36 tr1000it100ts10 m1n4 sp',
-'06-17 23.04.39 tr1000it100ts10 m0n1 se',
-'06-17 23.04.42 tr1000it100ts10 m1n1 rfe',
-'06-17 23.04.45 tr1000it100ts10 m2n4 ql',
-'06-18 00.14.03 tr1000it100ts10 ql',
-'06-18 00.14.15 tr1000it100ts10 rfe',
-'06-18 00.14.18 tr1000it100ts10 se',
-'06-18 00.14.20 tr1000it100ts10 sp4',
-'06-18 00.14.23 tr1000it100ts10 spase4',
-'06-18 00.20.33 tr1000it100ts10 sp2',
-'06-18 00.23.02 tr1000it100ts10 spase3',
-'06-18 00.23.18 tr1000it100ts10 spase2',
-'06-18 00.23.36 tr1000it100ts10 spase2',
-'06-18 00.24.06 tr1000it100ts10 spase2',
-'06-18 00.24.20 tr1000it100ts10 spase2',
-'06-18 00.24.33 tr1000it100ts10 spase2',
-'06-18 17.28.37 tr1000it100ts10 QLearning',
-'06-18 17.30.58 tr1000it100ts10 SPaSE4_82_107_1514',
-'06-18 17.31.14 tr1000it100ts10 SPaSE2_1514',
-'06-18 17.31.31 tr1000it100ts10 SE',
-'06-18 17.31.52 tr1000it100ts10 SP4_82_107_1514',
-'06-18 17.32.03 tr1000it100ts10 SP2_1514',
-'06-18 17.32.12 tr1000it100ts10 RFE',
-'06-20 22.11.01 tr1000it100ts10 QLearning',
-'06-20 22.11.26 tr1000it100ts10 SPaSE4_82_107_1514',
-'06-20 22.11.53 tr1000it100ts10 SPaSE2_1514',
-'06-20 22.12.05 tr1000it100ts10 SE',
-'06-20 22.12.18 tr1000it100ts10 RFE',
-'06-20 22.12.30 tr1000it100ts10 SP2_1514',
-'06-20 22.12.40 tr1000it100ts10 SP4_82_107_1514']
+            return o,d,f
+    def fn(a):
+        return '../img/{}/data.txt'.format(a)
+    def fn1(a):
+        return '../img/{}'.format(a)
 
-    good =[
-'06-18 00.20.33 tr1000it100ts10 sp2',
-'06-20 22.12.30 tr1000it100ts10 SP2_1514',
-'06-18 17.32.03 tr1000it100ts10 SP2_1514',
+    l=getdir()[2]
+    l = [fn1(x) for x in l if x.find('tr200') >= 0]
 
-'06-17 23.04.36 tr1000it100ts10 m1n4 sp',
 
-'06-17 21.07.03 tr1000it100ts10 m1n1 2RFE',
-'06-17 23.04.42 tr1000it100ts10 m1n1 rfe',
-'06-18 17.32.12 tr1000it100ts10 RFE',
-'06-18 00.14.15 tr1000it100ts10 rfe',
-'06-20 22.12.18 tr1000it100ts10 RFE',
-]
 
-    l=getdir()
-    l = [x for x in l if x.find('500') >= 0]
-
-    bad = list(set(alle).difference(set(good)))
 
     #for x in ssss:
     #    analyze(x)
-    analyze2([fn(x) for x in bad])
     #analyze2([fn(x) for x in bad])
 
+    b=[]
+    for o,d,f in os.walk('d:\\code\\PathPlanning\\img\\200_200noreward'):
+        for ff in f:
+            if ff.find('data.txt')==0:
+                fp = os.path.join(o,ff)
+                b.append(fp)
+
+    analyze2(l)
+    '''
+    analyze3(b,' SPaSE4_82_107_1514') # 差异不大
+    analyze3(b,' SPaSE2_1514') # 差异不大
+    analyze3(b,' SP4_82_107_1514') # 差异极大（两级）
+    analyze3(b,' SP2_1514') # 差异极大（较好）
+    analyze3(b,' SE') # 差异不大
+    analyze3(b,' RFE') #
+    analyze3(b,' QLearning') #
+
+    analyze3(b,'nSPaSE4_82_107_1514') # 差异不大
+    analyze3(b,'nSPaSE2_1514') # 差异不大
+    analyze3(b,'nSP4_82_107_1514') # 差异极大（两级）
+    analyze3(b,'nSP2_1514') # 差异极大（较好）
+    analyze3(b,'nSE') # 差异不大
+    analyze3(b,'nRFE') #
+    analyze3(b,'nQLearning') #
+    '''

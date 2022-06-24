@@ -29,11 +29,13 @@ class MSSETester():
         self.expname = '{} tr{}it{}ts{} {}'.format(get_time(), train_gap, total_iter, test_gap, fname, )
         self.mode = mode
         self.sources = sources
-        os.makedirs('../img/{}'.format(self.expname))
+        #os.makedirs('../img/{}'.format(self.expname))
         print(self.expname, 'begin')
 
         self.env = UnrenderedMaze()
         if mode == 2:
+            self.mergetime = datetime.timedelta(0)
+            self.exploretime = datetime.timedelta(0)
             self.agent = QLearningTable(actions=self.env.action_space, e_greedy=0.9)
         else:
             msse = MultipleReversal(sources = sources, mode = mode, expname = self.expname)
@@ -78,12 +80,15 @@ class MSSETester():
             #    print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
             self.train_info = '{}{} {} {}\n'.format(self.train_info, i, get_time(), trate)
         # end of for
-        plntime = datetime.datetime.now() - stime
         cvg = (cvgtime - stime) if cvgtime is not None else (stime - stime)
-        train_time = [self.mergetime.total_seconds(),self.exploretime.total_seconds(),cvg.total_seconds(),plntime.total_seconds()] if hasattr(self, 'mergetime') else [cvg.total_seconds(),plntime.total_seconds()]
+        train_time = [
+            self.mergetime.total_seconds(),
+            self.exploretime.total_seconds(),
+            cvg.total_seconds(),
+            self.mergetime.total_seconds() + self.exploretime.total_seconds() + cvg.total_seconds()]
         #print(self.endpoints)
-        guide_table(self.agent.q_table, self.env.height, self.env.width, '{}/guide'.format(self.expname), cmap='rainbow')
-        with open('../img/{}/data.txt'.format(self.expname), 'w', encoding='utf-8') as f:
+        #guide_table(self.agent.q_table, self.env.height, self.env.width, '{}/guide'.format(self.expname), cmap='rainbow')
+        with open('../img/{}.txt'.format(self.expname), 'w', encoding='utf-8') as f:
             f.write(','.join([str(x) for x in test_rate]) + '\n')
             f.write(','.join([str(round(x, 2)) for x in test_len]) + '\n')
             f.write(','.join([str(x) for x in train_rate]) + '\n')
@@ -91,6 +96,7 @@ class MSSETester():
             f.write(','.join([str(round(x, 3)) for x in test_reward]) + '\n')
             f.write(','.join([str(round(x, 3)) for x in train_reward]) + '\n')
             f.write('train time: {}\n'.format(train_time))
+            f.write('{} {} {}\n'.format(self.expname, STEP_REWARD, MERGE_REWARD))
             f.write(self.train_info)
         with open('../img/{}.txt'.format(ename(self.mode, self.sources)), 'a', encoding='utf-8') as f:
             f.write('{},\n'.format(train_time))

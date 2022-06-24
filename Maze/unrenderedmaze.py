@@ -13,7 +13,8 @@ ARRIVE = 'arrive'
 
 ARRIVE_REWARD = 2.0
 CRASH_REWARD = -1.0
-STEP_REWARD = -0.001 # 实际使用cosine
+STEP_REWARD = -0.001
+MERGE_REWARD = 0
 
 END_IF_OUT = False # 出界时是否结束训练
 END_IF_CRASH = True # 碰撞时是否结束训练
