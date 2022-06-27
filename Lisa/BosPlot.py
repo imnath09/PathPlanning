@@ -167,68 +167,67 @@ b=[
     np.array(m['SPaSE4_82_107_1514merge']) + np.array(e['SPaSE4_82_107_1514explore']),
 ]
 
-import nQLearning
-import nRFE
-import nSE
-import nSP2_1514
-import nSP4_82_107_1514
-import nSPaSE2_1514
-import nSPaSE4_82_107_1514
-import QLearning
-import RFE
-import SE
-import SP2_1514
-import SP4_82_107_1514
-import SPaSE2_1514
-import SPaSE4_82_107_1514
-ddd={
-'nQLearning':nQLearning.a,
-'QLearning':QLearning.a,
-'nRFE':nRFE.a,
-'RFE':RFE.a,
-'nSE':nSE.a,
-'SE':SE.a,
-'nSP2_1514':nSP2_1514.a,
-'SP2_1514':SP2_1514.a,
-'nSP4_82_107_1514':nSP4_82_107_1514.a,
-'SP4_82_107_1514':SP4_82_107_1514.a,
-'nSPaSE2_1514':nSPaSE2_1514.a,
-'SPaSE2_1514':SPaSE2_1514.a,
-'nSPaSE4_82_107_1514':nSPaSE4_82_107_1514.a,
-'SPaSE4_82_107_1514':SPaSE4_82_107_1514.a,
-}
-def parsedic(ddd,i):
-    r={}
-    for k,v in ddd.items():
-        r[k] = np.array([x[i] for x in v])
-    return r
-extime = parsedic(ddd, 0)
-mgtime = parsedic(ddd, 1)
-cvtime = parsedic(ddd, 2)
-pltime = {}
-for k in extime:
-    pltime[k] = extime[k] + cvtime[k]
-################画图
-plt.figure(figsize=(10,10))
-plt.boxplot(
-    x=cvtime.values(),
-    #x=merge_exploration.values(),
-    notch=False,
-    showmeans=True,
-    meanline=True,
-    patch_artist=False,
-    widths=0.2,
-    #boxprops={'color':'blue',},#设置箱体属性，填充色和边框色
-    flierprops={'marker':'+','markerfacecolor':'#9999ff'},#设置异常值属性，点的形状、填充颜色和边框色
-    meanprops={'linestyle':'dotted','color':'red'},#设置均值点的属性，点的颜色和形状
-    medianprops={'linestyle':'-','color':'orange'},#设置中位数线的属性，线的类型和颜色
-    labels=cvtime.keys(),#[0::1],
-    )
-plt.xticks(rotation = 90)
-plt.tight_layout()
-plt.show()
 
 
 
+##############
+
+def getfiles():
+    import os
+    for o,_,f in os.walk('..\\img\\200_150_2'):
+        return [os.path.join(o,x) for x in f if x.find('.txt') >= 0 and x.find('tr200') < 0]
+def readfile(fname):
+    with open(fname, 'r', encoding='utf-8') as file1:
+        lines = file1.readlines()
+        data = [x.split(',') for x in lines]
+    mg, ex, cvg, tot, fk = [], [], [], [], []
+    for i in range(len(data)):
+        mg.append(float(data[i][0]))
+        ex.append(float(data[i][1]))
+        cvg.append(float(data[i][2]))
+        tot.append(float(data[i][3]))
+        fk.append(float(data[i][4]))
+    return mg, ex, cvg, tot, fk
+def draw(dic,name):
+    plt.figure(figsize=(20,10))
+    plt.boxplot(
+        x=dic.values(),
+        #x=merge_exploration.values(),
+        notch=False,
+        showmeans=True,
+        meanline=True,
+        patch_artist=False,
+        widths=0.2,
+        #boxprops={'color':'blue',},#设置箱体属性，填充色和边框色
+        flierprops={'marker':'+','markerfacecolor':'#9999ff'},#设置异常值属性，点的形状、填充颜色和边框色
+        meanprops={'linestyle':'dotted','color':'red'},#设置均值点的属性，点的颜色和形状
+        medianprops={'linestyle':'-','color':'orange'},#设置中位数线的属性，线的类型和颜色
+        labels=dic.keys(),#[0::1],
+        )
+    plt.xticks(rotation = 90)
+    plt.tight_layout()
+    plt.savefig('..\\img\\200_150_2\\'+name+'.png')
+    plt.close()
 def mergedict(a, b):
     return {**a, **b}
+
+mgs = {}
+exs = {}
+cvgs = {}
+tots = {}
+fks = {}
+fs = getfiles()
+for f in fs:
+    mg, ex, cvg, tot, fk = readfile(f)
+    mgs[f] = mg
+    exs[f] = ex
+    cvgs[f] = cvg
+    tots[f] = tot
+    fks[f] = fk
+
+
+draw(mgs, '1merge')
+draw(exs, '2explore')
+draw(cvgs, '3converge')
+draw(tots, '4total')
+draw(fks, '5fake')

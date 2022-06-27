@@ -85,7 +85,9 @@ class MSSETester():
             self.mergetime.total_seconds(),
             self.exploretime.total_seconds(),
             cvg.total_seconds(),
-            self.mergetime.total_seconds() + self.exploretime.total_seconds() + cvg.total_seconds()]
+            self.mergetime.total_seconds() + self.exploretime.total_seconds() + cvg.total_seconds(),
+            self.mergetime.total_seconds() + cvg.total_seconds(),
+            ]
         #print(self.endpoints)
         #guide_table(self.agent.q_table, self.env.height, self.env.width, '{}/guide'.format(self.expname), cmap='rainbow')
         with open('../img/{}.txt'.format(self.expname), 'w', encoding='utf-8') as f:
@@ -96,10 +98,9 @@ class MSSETester():
             f.write(','.join([str(round(x, 3)) for x in test_reward]) + '\n')
             f.write(','.join([str(round(x, 3)) for x in train_reward]) + '\n')
             f.write('train time: {}\n'.format(train_time))
-            f.write('{} {} {}\n'.format(self.expname, STEP_REWARD, MERGE_REWARD))
             f.write(self.train_info)
         with open('../img/{}.txt'.format(ename(self.mode, self.sources)), 'a', encoding='utf-8') as f:
-            f.write('{},\n'.format(train_time))
+            f.write(','.join([str(round(x, 2)) for x in train_time]) + '\n')
 
     def Batch(self, isTrain, gap):
         path_len = [] # 记录成功时的路径长度

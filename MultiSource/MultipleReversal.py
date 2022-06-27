@@ -12,7 +12,7 @@ class MultipleReversal(MultiBase):
         MultiBase.__init__(self, sources = sources)
         self.mode = mode
         self.expname = expname
-        self.jumpgap = 100 if mode == 0 else 500
+        self.jumpgap = 500 if mode == 0 else 500
 
     def walk(self, src : Source):
         action = src.agent.choose_action(encode(src.cur))
@@ -108,6 +108,17 @@ class MultipleReversal(MultiBase):
     def inner_train(self):
         self.finalsource.steps = 0
         self.finalsource.cur = self.start
+        self.finalsource.isend = False
+        stime = datetime.datetime.now()
+        while True:
+            source = self.walk(self.finalsource)
+            if source.isend:
+                return datetime.datetime.now() - stime
+
+
+    def inner_train1(self):
+        self.finalsource.steps = 0
+        self.finalsource.cur = self.start
         stime = datetime.datetime.now()
         while True:
             action = self.finalsource.agent.choose_action(encode(self.finalsource.cur))
@@ -117,7 +128,7 @@ class MultipleReversal(MultiBase):
             if info == FOUND:
                 etime = datetime.datetime.now()
                 return etime - stime
-            self.finalsource.steps = (1 + self.finalsource.steps) % 500
+            self.finalsource.steps = (1 + self.finalsource.steps) % self.jumpgap
             if done or self.finalsource.steps == 0:
                 self.finalsource.cur = self.start
             else:
@@ -154,7 +165,7 @@ srcdata = [
     [np.array([10, 7]),], # 5
     [np.array([8, 2]),], # 6
     [], #7
-    [np.array([13, 10]),np.array([13, 13]),np.array([15, 14]),], # 8
+    [np.array([18, 14]),np.array([13, 13]),np.array([15, 14]),], # 8
 ]
 
 def ename(mode, srcs):

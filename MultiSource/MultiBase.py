@@ -17,7 +17,7 @@ class MultiBase(UnrenderedMaze):
         self.destination = self.map.destination
         self.start = self.map.start
         self.agent = None
-        self.finalsource = None
+        self.finalsource : Source
         self.srcs = [
             Source(self.start, isstart = True),
             ]
@@ -48,6 +48,7 @@ class MultiBase(UnrenderedMaze):
         while True:
             source = self.iterstep()
             if source is not None:
+                self.srcs = [source]
                 self.finalsource = source
                 self.agent = source.agent
                 etime = datetime.datetime.now()

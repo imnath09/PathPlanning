@@ -27,15 +27,17 @@ def draw(title, datas, colors, labels, savename, linestyles = linestyle1):
     plt.suptitle(title)
     for i in range(len(datas)):
         plt.plot(
-            datas[i], colors[i], linestyle = linestyles[i % 4],
+            datas[i],
+            colors[i],
+            linestyle = linestyles[i % 4],
             alpha = al,
-            label = labels[i],
+            #label = labels[i],
             )
     plt.ylabel(title)
     plt.xlabel('horizon')
-    #plt.ylim(-0.05,0.7)
+    plt.ylim(-0.05, 0.9)
     plt.grid(visible=True,axis='x')
-    plt.legend()
+    #plt.legend()
     plt.tight_layout()
     plt.savefig(savename)
     plt.close()
@@ -57,7 +59,7 @@ def analyze2(files):
     #get_color = lambda : "#" + "%06x" % random.randint(0, 0xFFFFFF)
     get_colors = lambda n: list(map(lambda i: "#" + "%06x" % random.randint(0, 0xFFFFFF),range(n)))
     colors = get_colors(len(datas))
-    sx = 120
+    sx = 150
 
     # 测试成功率
     test_rates = [x[0][0:sx] for x in datas]
@@ -93,11 +95,11 @@ def analyze3(files, fname):
     #get_color = lambda : "#" + "%06x" % random.randint(0, 0xFFFFFF)
     get_colors = lambda n: list(map(lambda i: "#" + "%06x" % random.randint(0, 0xFFFFFF),range(n)))
     colors = get_colors(len(datas))
-    sx = 120
+    sx = 150
 
     # 测试成功率
     train_rates = [x[2][0:sx] for x in datas]
-    draw('train rates', train_rates, colors, files, '../img/{}.png'.format(fname))
+    draw('train rates', train_rates, colors, files, '../img/{}.png'.format(fname), linestyle1)
 
     print('finish')
 
@@ -112,8 +114,9 @@ if __name__ == '__main__':
     def fn1(a):
         return '../img/{}'.format(a)
 
-    l=getdir()[2]
-    l = [fn1(x) for x in l if x.find('tr200') >= 0]
+    #l=getdir('d:\\code\\pathplanning\\img\\1000_100')[1]
+    #l = [fn1(x) for x in l if x.find('tr200') >= 0]
+    #analyze2(l)
 
 
 
@@ -123,27 +126,41 @@ if __name__ == '__main__':
     #analyze2([fn(x) for x in bad])
 
     b=[]
-    for o,d,f in os.walk('d:\\code\\PathPlanning\\img\\200_200noreward'):
+    for o,d,f in os.walk('d:\\code\\PathPlanning\\img\\200_150_2'):
         for ff in f:
-            if ff.find('data.txt')==0:
+            if ff.find('tr200')>=0:
                 fp = os.path.join(o,ff)
                 b.append(fp)
 
-    analyze2(l)
-    '''
-    analyze3(b,' SPaSE4_82_107_1514') # 差异不大
-    analyze3(b,' SPaSE2_1514') # 差异不大
-    analyze3(b,' SP4_82_107_1514') # 差异极大（两级）
-    analyze3(b,' SP2_1514') # 差异极大（较好）
-    analyze3(b,' SE') # 差异不大
     analyze3(b,' RFE') #
+    analyze3(b,' SE') #
     analyze3(b,' QLearning') #
 
-    analyze3(b,'nSPaSE4_82_107_1514') # 差异不大
+    #analyze3(b,' SP2_107') # 差异不大
+    analyze3(b,' SP2_1514') # 差异不大
+
+    analyze3(b,' SP4_82_107_1514') # 差异极大（两级）
+    #analyze3(b,' SP4_1814_1313_1514') # 差异极大（两级）
+
+    #analyze3(b,' SPaSE2_82') # 差异不大
+    #analyze3(b,' SPaSE2_157') # 差异不大
+    #analyze3(b,' SPaSE2_107') # 差异不大
+    #analyze3(b,' SPaSE2_1310') # 差异不大
+    analyze3(b,' SPaSE2_1514') # 差异不大
+
+    analyze3(b,' SPaSE4_82_107_1514') # 差异不大
+    #analyze3(b,' SPaSE4_1814_1313_1514') # 差异不大
+
+    '''analyze3(b,'nSPaSE4_82_107_1514') # 差异不大
     analyze3(b,'nSPaSE2_1514') # 差异不大
     analyze3(b,'nSP4_82_107_1514') # 差异极大（两级）
     analyze3(b,'nSP2_1514') # 差异极大（较好）
     analyze3(b,'nSE') # 差异不大
     analyze3(b,'nRFE') #
-    analyze3(b,'nQLearning') #
-    '''
+    analyze3(b,'nQLearning') #'''
+
+
+
+
+
+
