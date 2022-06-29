@@ -8,10 +8,12 @@ from scipy.stats import pearsonr
 def heat(table1, table2, figname=''):
     l1 = table1.index.__len__()
     l2 = table2.index.__len__()
-    l = max(l1, l2)
-    fig = plt.figure()
-    fig.set_figheight(l)
-    fig.set_figwidth(l)
+    l = 15 # max(l1, l2)
+    fsize = 9.5
+    scattersiize = 450
+    fig = plt.figure(figsize=(l, l))
+    #fig.set_figheight(l)
+    #fig.set_figwidth(l)
 
     rframe = pd.DataFrame(columns=table2.index.values,dtype=float)
     pframe = pd.DataFrame(columns=table2.index.values)
@@ -22,46 +24,53 @@ def heat(table1, table2, figname=''):
             f2 = table2.iloc[i]
             f1 = table1.iloc[j]
             r, p = pearsonr(f1, f2)
-            r = round(r, 2)
+            #r = round(r, 2)
             #ntbl[i][j] = r
 
+            rrrr=''
             if p < 0.001:
-                text = '{}{}'.format(r, '***')
+                text = '{}{}'.format(rrrr, '***')
             elif p < 0.01:
-                text = '{}{}'.format(r, '**')
+                text = '{}{}'.format(rrrr, '**')
             elif p < 0.05:
-                text = '{}{}'.format(r, '*')
+                text = '{}{}'.format(rrrr, '*')
             else:
-                text = str(r)
+                text = str(rrrr)
 
-            plt.annotate(text=text, xy=(i, j), ha='center', va='center', fontsize='large')
+            plt.annotate(text=text, xy=(i, j), ha='center', va='center', fontsize=fsize)
+            #fontsize ['xx-small', 'x-small', 'small', 'medium', 'large','x-large', 'xx-large']
             plt.hlines(
                 y=j-0.5, xmin=i-0.5, xmax=i+0.5,
-                color='black', linewidth=1
+                color='black', linewidth=0.3
             )
             plt.vlines(
                 x=i+0.5, ymin=j-0.5, ymax=j+0.5,
-                color='black', linewidth=1
+                color='black', linewidth=0.3
             )
             plt.scatter(
-                x=i, y=j, s=abs(4000*r), c=r,
+                x=i, y=j, s=abs(scattersiize * r), c=r,
                 edgecolors='black',
-                cmap='bwr', marker='o', vmin=-1.0, vmax=1.0
+                cmap='bwr', marker='o', vmin=-1.0, vmax=1.0,
+                linewidths=0.4
             )
-            #fontsize ['xx-small', 'x-small', 'small', 'medium', 'large','x-large', 'xx-large']
-
+    plt.scatter(x=0, y=0, s=abs(scattersiize * 1), c=r,edgecolors='black',cmap='bwr', marker='o', vmin=-1.0, vmax=1.0,linewidths=0.4)
 
     plt.imshow(ntbl, cmap='bwr', vmin=-1.0, vmax=1.0)
     #plt.xlim(-1, l2)
     #plt.ylim(-1, l1)
-    plt.xticks(range(l2), labels=table2.index.values, rotation=90)
-    plt.yticks(range(l1), labels=table1.index.values)
+
+    plt.xticks(range(l2), labels=['' for i in range(l2)], fontsize=fsize, rotation=45)
+    for i in range(l2):
+        plt.annotate(text=table2.index.values[i],xy=(i, -0.5), rotation=45)
+    plt.yticks(range(l1), labels=table1.index.values, fontsize=fsize)
     plt.tight_layout()
     #plt.colorbar()
-    #plt.show()
-    plt.savefig(figname)
 
-def scatter(t1, t2, figname=''):
+    plt.show()
+    #plt.savefig('{} {}.png'.format(figname, l))
+    plt.close()
+
+'''def scatter(t1, t2, figname=''):
     l1 = len(t1.index)
     l2 = len(t2.index)
     l = max(l1, l2)
@@ -105,17 +114,19 @@ def scatter(t1, t2, figname=''):
     plt.xticks(np.arange(l2), labels=t2.index.values, rotation=90)
     plt.tight_layout()
     plt.savefig(figname)
-    #plt.show()
+    #plt.show()'''
 
 
 
 if __name__ == '__main__':
-    f1 = pd.read_excel(r'clinical data.xlsx', index_col='clinical data')#, dtype='float')
-    f2 = pd.read_excel(r'top 50 meta.xlsx', index_col='met',)# dtype='float')
+    n1 = '2'
+    n2 = '6'
+    f1 = pd.read_excel(n1+'.xlsx', index_col='id')#, dtype='float')
+    f2 = pd.read_excel(n2+'.xlsx', index_col='id',)# dtype='float')
     f3 = pd.concat([f1, f2])
 
-    heat(f1, f2, './hzujian.png')
-    heat(f3, f3, './hzunei.png')
+    heat(f1, f2, n1 + '-' + n2)
+    #heat(f3, f3, 'hzunei')
     '''
     c1 = f1.columns.values
     print(c1)
