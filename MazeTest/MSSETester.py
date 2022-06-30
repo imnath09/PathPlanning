@@ -4,6 +4,7 @@ import sys
 sys.path.append('..')
 
 from MultiSource.MultipleReversal import *
+from MultiSource.SPaSE import *
 
 '''
 1.qlearning，Qlearning
@@ -38,10 +39,16 @@ class MSSETester():
             self.exploretime = datetime.timedelta(0)
             self.agent = QLearningTable(actions=self.env.action_space, e_greedy=0.9)
         else:
+            '''
             msse = MultipleReversal(sources = sources, mode = mode, expname = self.expname)
             self.mergetime = msse.explore()
             self.exploretime = msse.inner_train()
-            self.agent = msse.agent
+            '''
+            msse = SPaSE(sources = sources, mode = mode, expname = self.expname)
+            self.mergetime = msse.mergetime
+            self.exploretime = msse.exploretime
+
+            self.agent = msse.finalsource.agent
 
         self.endpoints = np.zeros((self.env.height + 2, self.env.width + 2), dtype = int)
 
@@ -138,9 +145,9 @@ class MSSETester():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--testgap', type=int, default=10)
-    parser.add_argument('--traingap', type=int, default=1000)
-    parser.add_argument('--iter', type=int, default=100)
+    parser.add_argument('--testgap', type=int, default=3)
+    parser.add_argument('--traingap', type=int, default=200)
+    parser.add_argument('--iter', type=int, default=150)
     parser.add_argument('--mode', type=int, help = 'mode:0-随机;1-不随机;2-qlearning')
     parser.add_argument('--n', type=int, default=0)
     args = parser.parse_args()

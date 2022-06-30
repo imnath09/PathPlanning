@@ -41,7 +41,8 @@ class RenderMap(gym.Env, SPaSE):
         # 移动点
         self.colors = {}
         self.sources = {}
-        for src in self.srcs:
+        ss = self.srcs+[self.finalsource] if self.finalsource is not None else self.srcs
+        for src in ss:
             # 起始点
             t = self.draw_shape(src.cur, color = (0, 0, 1), shape = 'circle', radius = 0.3)
             # 随机颜色
@@ -90,7 +91,7 @@ class RenderMap(gym.Env, SPaSE):
 
 if __name__ == '__main__':
     mode = 0
-    n = 0
+    n = 1
     src = srcdata[n]
     name = ename(mode, src)
     rm = RenderMap(src, mode, name)
