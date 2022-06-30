@@ -87,6 +87,8 @@ def analyze2(files):
 
     print('finish')
 
+
+fpath='cmp'
 def analyze3(files, fname):
     files = [x for x in files if x.find(fname) >= 0]
     datas = [readfile(x) for x in files] # 数量是文本数量
@@ -99,9 +101,9 @@ def analyze3(files, fname):
 
     # 测试成功率
     train_rates = [x[2][0:sx] for x in datas]
-    draw('train rates', train_rates, colors, files, '../img/{}.png'.format(fname), linestyle1)
+    draw('train rates', train_rates, colors, files, '../img/{}/{}.png'.format(fpath, fname), linestyle1)
 
-    print('finish')
+    #print('finish')
 
 if __name__ == '__main__':
     def getdir(d=''):
@@ -118,37 +120,41 @@ if __name__ == '__main__':
     #l = [fn1(x) for x in l if x.find('tr200') >= 0]
     #analyze2(l)
 
-
-
-
     #for x in ssss:
     #    analyze(x)
     #analyze2([fn(x) for x in bad])
 
     b=[]
-    for o,d,f in os.walk('d:\\code\\PathPlanning\\img\\200_150_2'):
+    c=[]
+    for o,d,f in os.walk('d:\\code\\PathPlanning\\img\\'+fpath):
         for ff in f:
             if ff.find('tr200')>=0:
                 fp = os.path.join(o,ff)
                 b.append(fp)
+            elif ff.find('.txt')>=0:
+                c.append(ff.strip('.txt')[1:])
 
-    analyze3(b,' RFE') #
-    analyze3(b,' SE') #
-    analyze3(b,' QLearning') #
+    for x in c:
+        analyze3(b,x) #
+    #analyze3(b,' SE') #
+    #analyze3(b,' QLearning') #
+    #analyze3(b,' RFE')
 
     #analyze3(b,' SP2_107') # 差异不大
-    analyze3(b,' SP2_1514') # 差异不大
+    #analyze3(b,' SP2_1514') # 差异不大
 
-    analyze3(b,' SP4_82_107_1514') # 差异极大（两级）
+    #analyze3(b,' SP4_82_158_1514') # 差异极大（两级）
+    #analyze3(b,' SP4_82_107_1514') # 差异极大（两级）
     #analyze3(b,' SP4_1814_1313_1514') # 差异极大（两级）
 
     #analyze3(b,' SPaSE2_82') # 差异不大
     #analyze3(b,' SPaSE2_157') # 差异不大
     #analyze3(b,' SPaSE2_107') # 差异不大
     #analyze3(b,' SPaSE2_1310') # 差异不大
-    analyze3(b,' SPaSE2_1514') # 差异不大
+    #analyze3(b,' SPaSE2_1514') # 差异不大
 
-    analyze3(b,' SPaSE4_82_107_1514') # 差异不大
+    #analyze3(b,' SPaSE4_82_107_1514') # 差异不大
+    #analyze3(b,' SPaSE4_82_158_1514') # 差异不大
     #analyze3(b,' SPaSE4_1814_1313_1514') # 差异不大
 
     '''analyze3(b,'nSPaSE4_82_107_1514') # 差异不大

@@ -22,7 +22,16 @@ srcdata = [
     [], #7
 ]
 
-def ename(mode, srcs):
+def SPaRMname(mode, srcs):
+    if mode == 2:
+        return 'QLearning'
+    info = '_'.join(['{}{}'.format(x[0], x[1]) for x in srcs])
+    if mode == 1:
+        return 'SP{}_{}'.format(len(srcs) + 1, info)
+    else:#0
+        return 'SPaRM{}_{}'.format(len(srcs) + 1, info)
+
+def SPaSEname(mode, srcs):
     if mode == 0 and len(srcs) == 0:
         return 'SE'
     elif mode == 0 and len(srcs) > 0:
@@ -49,6 +58,8 @@ class MultiBase(UnrenderedMaze):
         self.expname = expname
         self.jumpgap = 500 if mode == 0 else 500
         self.finalsource = None
+        self.exploretime = datetime.timedelta(seconds = 0)
+        self.mergetime = datetime.timedelta(seconds = 0)
         if sources == None:# or len(sources) == 0:
             self.srcs = []
         else:
@@ -70,7 +81,7 @@ class MultiBase(UnrenderedMaze):
                 return s
         return None
 
-    def explore(self):
+    def merge(self):
         #print(len(self.srcs), 'sources')
         stime = datetime.datetime.now()
         #print(stime, 'start')
@@ -82,6 +93,7 @@ class MultiBase(UnrenderedMaze):
                 etime = datetime.datetime.now()
                 time_delta = etime - stime
                 #print(etime, 'found. total', time_delta)
+                self.mergetime = time_delta#result
                 return time_delta#result
     def iterstep(self):
         '''迭代，让每个source走一步'''

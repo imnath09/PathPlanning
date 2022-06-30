@@ -171,10 +171,10 @@ b=[
 
 
 ##############
-
+fpath = 'cmp'
 def getfiles():
     import os
-    for o,_,f in os.walk('..\\img\\200_150_2'):
+    for o,_,f in os.walk('..\\img\\{}'.format(fpath)):
         return [os.path.join(o,x) for x in f if x.find('.txt') >= 0 and x.find('tr200') < 0]
 def readfile(fname):
     with open(fname, 'r', encoding='utf-8') as file1:
@@ -203,10 +203,12 @@ def draw(dic,name):
         meanprops={'linestyle':'dotted','color':'red'},#设置均值点的属性，点的颜色和形状
         medianprops={'linestyle':'-','color':'orange'},#设置中位数线的属性，线的类型和颜色
         labels=dic.keys(),#[0::1],
+        whis=0.8,
         )
     plt.xticks(rotation = 90)
+    plt.grid(visible=True,axis='y')
     plt.tight_layout()
-    plt.savefig('..\\img\\200_150_2\\'+name+'.png')
+    plt.savefig('..\\img\\{}\\{}.png'.format(fpath, name))
     plt.close()
 def mergedict(a, b):
     return {**a, **b}
@@ -218,12 +220,13 @@ tots = {}
 fks = {}
 fs = getfiles()
 for f in fs:
+    f1 = f.split('\\')[-1]
     mg, ex, cvg, tot, fk = readfile(f)
-    mgs[f] = mg
-    exs[f] = ex
-    cvgs[f] = cvg
-    tots[f] = tot
-    fks[f] = fk
+    mgs[f1] = mg
+    exs[f1] = ex
+    cvgs[f1] = cvg
+    tots[f1] = tot
+    fks[f1] = fk
 
 
 draw(mgs, '1merge')

@@ -10,7 +10,7 @@ def heat(table1, table2, figname=''):
     l2 = table2.index.__len__()
     l = 15 # max(l1, l2)
     fsize = 9.5
-    scattersiize = 450
+    scattersiize = 650
     fig = plt.figure(figsize=(l, l))
     #fig.set_figheight(l)
     #fig.set_figwidth(l)
@@ -53,7 +53,7 @@ def heat(table1, table2, figname=''):
                 cmap='bwr', marker='o', vmin=-1.0, vmax=1.0,
                 linewidths=0.4
             )
-    plt.scatter(x=0, y=0, s=abs(scattersiize * 1), c=r,edgecolors='black',cmap='bwr', marker='o', vmin=-1.0, vmax=1.0,linewidths=0.4)
+    #plt.scatter(x=0, y=0, s=abs(scattersiize * 1), c=r,edgecolors='black',cmap='bwr', marker='o', vmin=-1.0, vmax=1.0,linewidths=0.4)
 
     plt.imshow(ntbl, cmap='bwr', vmin=-1.0, vmax=1.0)
     #plt.xlim(-1, l2)
@@ -119,8 +119,8 @@ def heat(table1, table2, figname=''):
 
 
 if __name__ == '__main__':
-    n1 = '2'
-    n2 = '6'
+    n1 = '1'
+    n2 = '5'
     f1 = pd.read_excel(n1+'.xlsx', index_col='id')#, dtype='float')
     f2 = pd.read_excel(n2+'.xlsx', index_col='id',)# dtype='float')
     f3 = pd.concat([f1, f2])

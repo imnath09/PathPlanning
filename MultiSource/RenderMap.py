@@ -6,12 +6,15 @@ from MultiSource.MultiMapBase import *
 from MultiSource.MultipleReversal import *
 from MultiSource.SPaSE import *
 
+from MultiSource.SpacePartition import *
+from MultiSource.SPaRM import *
+
 import gym
 from gym.envs.classic_control import rendering
 
 PIXEL = 30
 
-class RenderMap(gym.Env, SPaSE):
+class RenderMap(gym.Env, SPaRM):
     def __init__(self, sources = None, mode = 0, expname = ''):
         gym.Env.__init__(self)
         super().__init__(sources, mode, expname)
@@ -41,7 +44,8 @@ class RenderMap(gym.Env, SPaSE):
         # 移动点
         self.colors = {}
         self.sources = {}
-        for src in self.srcs:
+        ss = self.srcs+[self.finalsource] if self.finalsource is not None else self.srcs
+        for src in ss:
             # 起始点
             t = self.draw_shape(src.cur, color = (0, 0, 1), shape = 'circle', radius = 0.3)
             # 随机颜色
@@ -89,10 +93,10 @@ class RenderMap(gym.Env, SPaSE):
         return pl
 
 if __name__ == '__main__':
-    mode = 0
-    n = 0
+    mode = 1
+    n = 1
     src = srcdata[n]
-    name = ename(mode, src)
+    name = SPaSEname(mode, src)
     rm = RenderMap(src, mode, name)
-    rm.merge()
+    print(rm.merge())
     input('press any key to exit')

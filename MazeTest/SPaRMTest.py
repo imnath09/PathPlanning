@@ -3,8 +3,8 @@ import os
 import sys
 sys.path.append('..')
 
-from MultiSource.MultipleReversal import *
-from MultiSource.SPaSE import *
+from MultiSource.SpacePartition import *
+from MultiSource.SPaRM import *
 
 '''
 1.qlearning，Qlearning
@@ -24,10 +24,10 @@ from MultiSource.SPaSE import *
 3.一个源，100步后随机跳转，先合并，再规划终点——stochastic exploration
 '''
 
-class MSSETester():
+class SPaRMTest():
     def __init__(self, mode, sources):
-        fname = SPaSEname(mode, sources)
-        self.expname = '{} tr{}it{}ts{} {}'.format(get_time(), train_gap, total_iter, test_gap, fname, )
+        ep = SPaRMname(mode, sources)
+        self.expname = '{} tr{}it{}ts{} {}'.format(ep, train_gap, total_iter, test_gap, get_time(), )
         self.mode = mode
         self.sources = sources
         #os.makedirs('../img/{}'.format(self.expname))
@@ -38,21 +38,19 @@ class MSSETester():
             self.mergetime = datetime.timedelta(0)
             self.exploretime = datetime.timedelta(0)
             self.agent = QLearningTable(actions=self.env.action_space, e_greedy=0.9)
-        else:
-            '''
-            msse = MultipleReversal(sources = sources, mode = mode, expname = self.expname)
-            self.mergetime = msse.explore()
+        elif mode == 1:
+            msse = SpacePartition(sources = sources, expname = self.expname)
+            self.mergetime = msse.merge()
             self.exploretime = msse.inner_train()
-            '''
-            msse = SPaSE(sources = sources, mode = mode, expname = self.expname)
+            self.agent = msse.finalsource.agent
+        else:
+            msse = SPaRM(sources = sources, expname = self.expname)
             msse.merge()
             self.mergetime = msse.mergetime
             self.exploretime = msse.exploretime
-
             self.agent = msse.finalsource.agent
 
         self.endpoints = np.zeros((self.env.height + 2, self.env.width + 2), dtype = int)
-
 
     def core(self, test_gap, train_gap, total_iter):
         test_rate = [] # 成功率
@@ -107,7 +105,7 @@ class MSSETester():
             f.write(','.join([str(round(x, 3)) for x in train_reward]) + '\n')
             f.write('train time: {}\n'.format(train_time))
             f.write(self.train_info)
-        with open('../img/{}.txt'.format(SPaSEname(self.mode, self.sources)), 'a', encoding='utf-8') as f:
+        with open('../img/{}.txt'.format(SPaRMname(self.mode, self.sources)), 'a', encoding='utf-8') as f:
             f.write(','.join([str(round(x, 2)) for x in train_time]) + '\n')
 
     def Batch(self, isTrain, gap):
@@ -118,7 +116,7 @@ class MSSETester():
             total_reward = 0
 
             # one trial
-            for _ in range(500):
+            for _ in range(nnnn):
             #while True:
                 action = self.agent.choose_action(encode(observation)) if isTrain else self.agent.action(encode(observation))
                 observation_, reward, done, info = self.env.step(action)
@@ -149,8 +147,9 @@ if __name__ == '__main__':
     parser.add_argument('--testgap', type=int, default=3)
     parser.add_argument('--traingap', type=int, default=200)
     parser.add_argument('--iter', type=int, default=150)
-    parser.add_argument('--mode', type=int, help = 'mode:0-随机;1-不随机;2-qlearning')
+    parser.add_argument('--mode', type=int, default=2, help = '0-SPaRM; mode:1-SpacePartition; 2-qlearning;')
     parser.add_argument('--n', type=int, default=0)
+    parser.add_argument('--nnnn', type=int, default=500)
     args = parser.parse_args()
 
     test_gap = args.testgap
@@ -158,7 +157,8 @@ if __name__ == '__main__':
     total_iter = args.iter
     mode = args.mode
     n = args.n
-    msse = MSSETester(mode=mode, sources = srcdata[n])
+    nnnn = args.nnnn
+    msse = SPaRMTest(mode=mode, sources = srcdata[n])
     msse.core(test_gap, train_gap, total_iter)
 
 

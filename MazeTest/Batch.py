@@ -26,7 +26,7 @@ planning = [
 ]
 
 
-cmd = 'nohup python MSSETester.py --mode {} --n {} --traingap 200 --iter 150 --testgap 3 >>../img/train.log 2>&1 &'
+cmd = 'nohup python SPaRMTest.py --mode {} --n {} --traingap 200 --iter 150 --testgap 3 >>../img/train.log 2>&1 &'
 
 '''
 for _ in range(10):
@@ -40,25 +40,35 @@ it = 100
 te = 10
 
 opt = [
-    [2, 0],
-    [0, 0],
-    [0, 2],
-    [0, 7],
-    [1, 0],
-    [1, 2],
-    [1, 7],
+[2, 0],
+[0, 0],
+[0, 1],
+[0, 2],
+[0, 3],
+[0, 4],
+[0, 5],
+[0, 6],
+[0, 7],
+[1, 0],
+[1, 1],
+[1, 2],
+[1, 3],
+[1, 4],
+[1, 5],
+[1, 6],
+[1, 7],
 ]
 
-for _ in range(10):
+for _ in range(30):
     for m in opt:
         c = cmd.format(m[0], m[1])
         os.system(c)
-    s = random.sample(opt, 2)
+    '''s = random.sample(opt, 2)
     time.sleep(60)
     for m in s:
         c = cmd.format(m[0], m[1])
-        os.system(c)
-    time.sleep(1440)
+        os.system(c)'''
+    time.sleep(1200)
 
 
 

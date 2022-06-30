@@ -5,12 +5,10 @@ sys.path.append('..')
 import argparse
 from MultiSource.MultiBase import *
 
-class SPaSE(MultiBase):
-    def __init__(self, sources = None, mode = 0, expname = ''):
-        '''params:
-        mode: 0-随机跳转; 1-不随机跳转;
-        '''
-        MultiBase.__init__(self, sources = sources, mode = mode, expname = expname)
+class SPaRM(MultiBase):
+    def __init__(self, sources = None, mode = 1, expname = ''):
+        '''mode的值不再产生影响'''
+        MultiBase.__init__(self, sources = sources, expname = expname)
         self.finalsource = Source(self.destination, isend = True)
 
     def merge(self):
@@ -41,10 +39,7 @@ class SPaSE(MultiBase):
 
         # 碰撞（出界）或者满jumpgap步，随机跳
         if done or src.steps == 0: # 碰撞（出界），但没抵达终点。这些情况下随机跳
-            if self.mode == 0:
-                src.rjump()
-            else:
-                src.cur = src.start
+            src.cur = src.start
             self.move_block(src, src.cur)
 
         return False
