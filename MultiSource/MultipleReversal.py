@@ -9,10 +9,7 @@ class MultipleReversal(MultiBase):
         '''params:
         mode: 0-随机跳转; 1-不随机跳转;
         '''
-        MultiBase.__init__(self, sources = sources)
-        self.mode = mode
-        self.expname = expname
-        self.jumpgap = 500 if mode == 0 else 500
+        MultiBase.__init__(self, sources = sources, mode = mode, expname = expname)
 
     def walk(self, src : Source):
         action = src.agent.choose_action(encode(src.cur))
@@ -155,36 +152,6 @@ def test1(srcs, mode):
         td2 = ms.inner_train()
         with open('../img/{}merge.txt'.format(fname), 'a', encoding='utf-8') as f:
             f.write('{},\n'.format([td1.total_seconds(), td2.total_seconds()]))
-
-srcdata = [
-    [np.array([8, 2]),np.array([10, 7]),np.array([15, 14]),], # 0
-    [np.array([8, 2]),np.array([15, 14]),], # 1
-    [np.array([15, 14]),], # 2
-    [np.array([13, 10]),], # 3
-    [np.array([15, 7])], # 4
-    [np.array([10, 7]),], # 5
-    [np.array([8, 2]),], # 6
-    [], #7
-    [np.array([18, 14]),np.array([13, 13]),np.array([15, 14]),], # 8
-]
-
-def ename(mode, srcs):
-    if mode == 0 and len(srcs) == 0:
-        return 'SE'
-    elif mode == 0 and len(srcs) > 0:
-        n = 'SPaSE{}'.format(len(srcs) + 1)
-        for s in srcs:
-            n += '_{}{}'.format(s[0], s[1])
-        return n
-    elif mode == 1 and len(srcs) == 0:
-        return 'RFE'
-    elif mode == 1 and len(srcs) > 0:
-        n = 'SP{}'.format(len(srcs) + 1)
-        for s in srcs:
-            n += '_{}{}'.format(s[0], s[1])
-        return n
-    else:
-        return 'QLearning'
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

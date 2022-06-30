@@ -4,13 +4,14 @@ import sys
 sys.path.append('..')
 from MultiSource.MultiMapBase import *
 from MultiSource.MultipleReversal import *
+from MultiSource.SPaSE import *
 
 import gym
 from gym.envs.classic_control import rendering
 
 PIXEL = 30
 
-class RenderMap(gym.Env, MultipleReversal):
+class RenderMap(gym.Env, SPaSE):
     def __init__(self, sources = None, mode = 0, expname = ''):
         gym.Env.__init__(self)
         super().__init__(sources, mode, expname)
@@ -88,12 +89,10 @@ class RenderMap(gym.Env, MultipleReversal):
         return pl
 
 if __name__ == '__main__':
-    rm = RenderMap(sources=[
-        np.array([15, 14]),
-        np.array([13, 13]),
-    ])
-    s = datetime.datetime.now()
-    rm.explore()
-    f = datetime.datetime.now()
-    print(f-s)
+    mode = 0
+    n = 0
+    src = srcdata[n]
+    name = ename(mode, src)
+    rm = RenderMap(src, mode, name)
+    rm.merge()
     input('press any key to exit')

@@ -26,6 +26,11 @@ class Source():
             if (pos == p).all():
                 return True
         return False
+    def contain_any(self, poss):
+        for p in self.points:
+            if any((x == p).all() for x in poss):
+                return True
+        return False
     def rjump(self):
         rp = np.random.randint(0, len(self.points))
         self.cur = self.points[rp]
