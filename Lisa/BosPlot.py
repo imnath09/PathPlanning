@@ -171,7 +171,7 @@ b=[
 
 
 ##############
-fpath = 'cmp'
+fpath = '200_150_9 SPaRM'
 def getfiles():
     import os
     for o,_,f in os.walk('..\\img\\{}'.format(fpath)):
@@ -180,14 +180,15 @@ def readfile(fname):
     with open(fname, 'r', encoding='utf-8') as file1:
         lines = file1.readlines()
         data = [x.split(',') for x in lines]
-    mg, ex, cvg, tot, fk = [], [], [], [], []
+    mg, ex, cvg, tot, fk, me = [], [], [], [], [], []
     for i in range(len(data)):
         mg.append(float(data[i][0]))
         ex.append(float(data[i][1]))
         cvg.append(float(data[i][2]))
         tot.append(float(data[i][3]))
         fk.append(float(data[i][4]))
-    return mg, ex, cvg, tot, fk
+        me.append(float(data[i][0]) + float(data[i][1]))
+    return mg, ex, cvg, tot, fk, me
 def draw(dic,name):
     plt.figure(figsize=(20,10))
     plt.boxplot(
@@ -218,15 +219,17 @@ exs = {}
 cvgs = {}
 tots = {}
 fks = {}
+mes = {}
 fs = getfiles()
 for f in fs:
     f1 = f.split('\\')[-1]
-    mg, ex, cvg, tot, fk = readfile(f)
+    mg, ex, cvg, tot, fk, me = readfile(f)
     mgs[f1] = mg
     exs[f1] = ex
     cvgs[f1] = cvg
     tots[f1] = tot
     fks[f1] = fk
+    mes[f1] = me
 
 
 draw(mgs, '1merge')
@@ -234,3 +237,4 @@ draw(exs, '2explore')
 draw(cvgs, '3converge')
 draw(tots, '4total')
 draw(fks, '5fake')
+draw(mes, '0merge+explore')

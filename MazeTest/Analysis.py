@@ -31,13 +31,13 @@ def draw(title, datas, colors, labels, savename, linestyles = linestyle1):
             colors[i],
             linestyle = linestyles[i % 4],
             alpha = al,
-            #label = labels[i],
+            label = labels[i],
             )
     plt.ylabel(title)
     plt.xlabel('horizon')
-    plt.ylim(-0.05, 0.9)
+    #plt.ylim(-0.05, 0.9)
     plt.grid(visible=True,axis='x')
-    #plt.legend()
+    plt.legend()
     plt.tight_layout()
     plt.savefig(savename)
     plt.close()
@@ -53,6 +53,7 @@ def analyze(filename):
     draw('average cumulative reward', [test_rewards, train_rewards], colors, ['test reward', 'train reward'], '{}.reward.png'.format(filename), linestyles = linestyles2)
 
 def analyze2(files):
+    '''比较不同实验的六个数据'''
     datas = [readfile(x) for x in files] # 数量是文本数量
     #test_rate, test_len, train_rate, train_len, test_reward, train_reward = readfile(f1)
 
@@ -88,8 +89,9 @@ def analyze2(files):
     print('finish')
 
 
-fpath='cmp'
+fpath='cmp\\SP4_1514_107_82'
 def analyze3(files, fname):
+    '''把同一个实验的多个实例画进同一个图'''
     files = [x for x in files if x.find(fname) >= 0]
     datas = [readfile(x) for x in files] # 数量是文本数量
     #test_rate, test_len, train_rate, train_len, test_reward, train_reward = readfile(f1)
@@ -106,24 +108,6 @@ def analyze3(files, fname):
     #print('finish')
 
 if __name__ == '__main__':
-    def getdir(d=''):
-        if d == '':
-            d = 'd:\\code\\pathplanning\\img'
-        for o, d, f in os.walk(d):
-            return o,d,f
-    def fn(a):
-        return '../img/{}/data.txt'.format(a)
-    def fn1(a):
-        return '../img/{}'.format(a)
-
-    #l=getdir('d:\\code\\pathplanning\\img\\1000_100')[1]
-    #l = [fn1(x) for x in l if x.find('tr200') >= 0]
-    #analyze2(l)
-
-    #for x in ssss:
-    #    analyze(x)
-    #analyze2([fn(x) for x in bad])
-
     b=[]
     c=[]
     for o,d,f in os.walk('d:\\code\\PathPlanning\\img\\'+fpath):
@@ -133,37 +117,18 @@ if __name__ == '__main__':
                 b.append(fp)
             elif ff.find('.txt')>=0:
                 c.append(ff.strip('.txt')[1:])
+        break
 
+    ''' 
     for x in c:
         analyze3(b,x) #
-    #analyze3(b,' SE') #
-    #analyze3(b,' QLearning') #
-    #analyze3(b,' RFE')
+    '''
 
-    #analyze3(b,' SP2_107') # 差异不大
-    #analyze3(b,' SP2_1514') # 差异不大
-
-    #analyze3(b,' SP4_82_158_1514') # 差异极大（两级）
-    #analyze3(b,' SP4_82_107_1514') # 差异极大（两级）
-    #analyze3(b,' SP4_1814_1313_1514') # 差异极大（两级）
-
-    #analyze3(b,' SPaSE2_82') # 差异不大
-    #analyze3(b,' SPaSE2_157') # 差异不大
-    #analyze3(b,' SPaSE2_107') # 差异不大
-    #analyze3(b,' SPaSE2_1310') # 差异不大
-    #analyze3(b,' SPaSE2_1514') # 差异不大
-
-    #analyze3(b,' SPaSE4_82_107_1514') # 差异不大
-    #analyze3(b,' SPaSE4_82_158_1514') # 差异不大
-    #analyze3(b,' SPaSE4_1814_1313_1514') # 差异不大
-
-    '''analyze3(b,'nSPaSE4_82_107_1514') # 差异不大
-    analyze3(b,'nSPaSE2_1514') # 差异不大
-    analyze3(b,'nSP4_82_107_1514') # 差异极大（两级）
-    analyze3(b,'nSP2_1514') # 差异极大（较好）
-    analyze3(b,'nSE') # 差异不大
-    analyze3(b,'nRFE') #
-    analyze3(b,'nQLearning') #'''
+    #'''
+    t = 'SP4_1514_107_82'
+    a = [x for x in b if x.find(t) >= 0]
+    analyze2(a)
+    #'''
 
 
 
