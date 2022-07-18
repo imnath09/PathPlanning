@@ -11,15 +11,26 @@ WALK = 'walk'
 MERGE = 'merge'
 FOUND = 'found'
 
+p1 = np.array([15, 14])
+p2 = np.array([15, 8])
+p3 = np.array([10, 7])
+p4 = np.array([12, 5])
+p5 = np.array([8, 2])#比较废的点
+
+
 srcdata = [
-    [np.array([15, 14]),np.array([10, 7]),np.array([8, 2]),], # 0
-    [np.array([15, 14]),np.array([15, 8]),np.array([8, 2]),], # 1
-    [np.array([15, 14]),np.array([8, 2]),], # 2
-    [np.array([15, 14]),], # 3
-    [np.array([15, 8])], # 4
-    [np.array([10, 7]),], # 5
-    [np.array([8, 2]),], # 6
-    [], #7
+    [p1, p3, p5], # 0
+    [p1, p2, p5], # 1
+    [p1, p2, p4], # 2
+    [p1, p5],
+    [p1, p2],
+    [p1, p4],
+    [p1, p3],
+    [p1],
+    [p2],
+    [p3],
+    [p4],
+    [],
 ]
 
 def SPaRMname(mode, srcs):

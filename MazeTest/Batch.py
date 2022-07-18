@@ -1,43 +1,16 @@
 
 import os
-import random
 import time
+import sys
+sys.path.append('..')
+from MultiSource.MultiBase import srcdata
 
 # 记得执行脚本之前也要加nohup
-
-merge_exploration = [
-'nohup python ../MultiSource/MultipleReversal.py --mode 0 --n 0 >>../img/train.log 2>&1 &',
-'nohup python ../MultiSource/MultipleReversal.py --mode 0 --n 2 >>../img/train.log 2>&1 &',
-'nohup python ../MultiSource/MultipleReversal.py --mode 0 --n 7 >>../img/train.log 2>&1 &',
-'nohup python ../MultiSource/MultipleReversal.py --mode 1 --n 0 >>../img/train.log 2>&1 &',
-'nohup python ../MultiSource/MultipleReversal.py --mode 1 --n 2 >>../img/train.log 2>&1 &',
-'nohup python ../MultiSource/MultipleReversal.py --mode 1 --n 7 >>../img/train.log 2>&1 &',
-]
-planning = [
-#'nohup python MSSETester.py --mode 2 --n 2 --traingap 200 --iter 200 --testgap 3 >>../img/train.log 2>&1 &',
-'nohup python MSSETester.py --mode 0 --n 0 --traingap 200 --iter 200 --testgap 3 >>../img/train.log 2>&1 &',
-'nohup python MSSETester.py --mode 0 --n 2 --traingap 200 --iter 200 --testgap 3 >>../img/train.log 2>&1 &',
-#'nohup python MSSETester.py --mode 0 --n 7 --traingap 200 --iter 200 --testgap 3 >>../img/train.log 2>&1 &',
-'nohup python MSSETester.py --mode 0 --n 8 --traingap 200 --iter 200 --testgap 3 >>../img/train.log 2>&1 &',
-'nohup python MSSETester.py --mode 1 --n 0 --traingap 200 --iter 200 --testgap 3 >>../img/train.log 2>&1 &',
-'nohup python MSSETester.py --mode 1 --n 2 --traingap 200 --iter 200 --testgap 3 >>../img/train.log 2>&1 &',
-#'nohup python MSSETester.py --mode 1 --n 7 --traingap 200 --iter 200 --testgap 3 >>../img/train.log 2>&1 &',
-'nohup python MSSETester.py --mode 1 --n 8 --traingap 200 --iter 200 --testgap 3 >>../img/train.log 2>&1 &',
-]
 
 
 cmd = 'nohup python SPaRMTest.py --mode {} --n {} --traingap 200 --iter 150 --testgap 3 >>../img/train.log 2>&1 &'
 
-'''
-for _ in range(10):
-    for me in planning:
-        os.system(me)
-    time.sleep(1200)
-'''
 
-tr = 500
-it = 100
-te = 10
 
 opt = [
 [2, 0],
@@ -59,10 +32,12 @@ opt = [
 [1, 7],
 ]
 
-for _ in range(30):
-    for m in opt:
-        c = cmd.format(m[0], m[1])
-        os.system(c)
+for _ in range(20):
+    for n in range(2):
+        for m in range(len(srcdata)):
+            c = cmd.format(n, m)
+            os.system(c)
+    os.system(cmd.format(2, 0))
     '''s = random.sample(opt, 2)
     time.sleep(60)
     for m in s:
