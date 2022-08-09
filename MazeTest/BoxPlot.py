@@ -171,7 +171,7 @@ b=[
 
 
 ##############
-fpath = '200_150_9 SPaRM'
+fpath = '14'
 def getfiles():
     import os
     for o,_,f in os.walk('..\\img\\{}'.format(fpath)):
@@ -232,9 +232,9 @@ for f in fs:
     mes[f1] = me
 
 
+draw(mes, '0merge+explore')
 draw(mgs, '1merge')
 draw(exs, '2explore')
 draw(cvgs, '3converge')
 draw(tots, '4total')
 draw(fks, '5fake')
-draw(mes, '0merge+explore')

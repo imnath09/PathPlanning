@@ -92,7 +92,6 @@ class SPaRMTest():
             self.exploretime.total_seconds(),
             cvg.total_seconds(),
             self.mergetime.total_seconds() + self.exploretime.total_seconds() + cvg.total_seconds(),
-            self.mergetime.total_seconds() + cvg.total_seconds(),
             ]
         #print(self.endpoints)
         #guide_table(self.agent.q_table, self.env.height, self.env.width, '{}/guide'.format(self.expname), cmap='rainbow')
@@ -103,7 +102,7 @@ class SPaRMTest():
             f.write(','.join([str(round(x, 2)) for x in train_len]) + '\n')
             f.write(','.join([str(round(x, 3)) for x in test_reward]) + '\n')
             f.write(','.join([str(round(x, 3)) for x in train_reward]) + '\n')
-            f.write('train time: {}\n'.format(train_time))
+            f.write(train_time)#'train time: {}\n'.format(train_time))
             f.write(self.train_info)
         with open('../img/{}.txt'.format(SPaRMname(self.mode, self.sources)), 'a', encoding='utf-8') as f:
             f.write(','.join([str(round(x, 2)) for x in train_time]) + '\n')
