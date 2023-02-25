@@ -59,15 +59,17 @@ def heat(table1, table2, figname=''):
     #plt.xlim(-1, l2)
     #plt.ylim(-1, l1)
 
-    plt.xticks(range(l2), labels=['' for i in range(l2)], fontsize=fsize, rotation=45)
-    for i in range(l2):
-        plt.annotate(text=table2.index.values[i],xy=(i, -0.5), rotation=45)
+    #plt.xticks(range(l2), labels=['' for i in range(l2)], fontsize=fsize, rotation=45)
+    #for i in range(l2):
+    #    plt.annotate(text=table2.index.values[i],xy=(i, -0.5), rotation=45)
+    plt.xticks(range(l2), labels=table2.index.values, fontsize=fsize, rotation=45, ha='right')
+    
     plt.yticks(range(l1), labels=table1.index.values, fontsize=fsize)
     plt.tight_layout()
     #plt.colorbar()
 
+    plt.savefig('{} {}.png'.format(figname, l))
     plt.show()
-    #plt.savefig('{} {}.png'.format(figname, l))
     plt.close()
 
 '''def scatter(t1, t2, figname=''):
@@ -119,8 +121,8 @@ def heat(table1, table2, figname=''):
 
 
 if __name__ == '__main__':
+    n2 = 'before treatment metabolomics'
     n1 = '1'
-    n2 = '5'
     f1 = pd.read_excel(n1+'.xlsx', index_col='id')#, dtype='float')
     f2 = pd.read_excel(n2+'.xlsx', index_col='id',)# dtype='float')
     f3 = pd.concat([f1, f2])

@@ -206,7 +206,7 @@ def draw(dic,name):
         labels=dic.keys(),#[0::1],
         whis=0.8,
         )
-    plt.xticks(rotation = 90)
+    plt.xticks(rotation = 45, horizontalalignment = 'right')
     plt.grid(visible=True,axis='y')
     plt.tight_layout()
     plt.savefig('..\\img\\{}\\{}.png'.format(fpath, name))

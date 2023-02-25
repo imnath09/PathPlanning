@@ -22,7 +22,7 @@ SOME_COLORS = (
 )
 
 scolors = [
-    'blue','orange','yellow','green','red','purple','brown','pink','gray','olive','cyan'
+    'blue','orange','yellow','green','red','pink','gray','purple','olive','cyan','brown'
 ]
 
 def readfile(fname):

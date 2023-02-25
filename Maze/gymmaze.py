@@ -16,6 +16,7 @@ class GymMaze(gym.Env, UnrenderedMaze):
 
         self.viewer = rendering.Viewer(self.height * PIXEL, self.width * PIXEL)
         # 画线
+        '''
         for i in range(self.width + 1):
             line = rendering.Line((0, PIXEL * i), (PIXEL * self.height, PIXEL * i))
             line.set_color(0, 0, 0)
@@ -24,9 +25,23 @@ class GymMaze(gym.Env, UnrenderedMaze):
             line = rendering.Line((PIXEL * i, 0), (PIXEL * i, PIXEL * self.width))
             line.set_color(0, 0, 0)
             self.viewer.add_geom(line)
+        '''
+        # 只画边线
+        line = rendering.Line((1, 1), (PIXEL * self.height - 1, 1))
+        line.set_color(0, 0, 0)
+        self.viewer.add_geom(line)
+        line = rendering.Line((1, PIXEL * self.width - 1), (PIXEL * self.height - 1, PIXEL * self.width - 1))
+        line.set_color(0, 0, 0)
+        self.viewer.add_geom(line)
+        line = rendering.Line((1.1, 1), (1.1, PIXEL * self.width - 1))
+        line.set_color(0, 0, 0)
+        self.viewer.add_geom(line)
+        line = rendering.Line((PIXEL * self.height - 1, 1), (PIXEL * self.height - 1, PIXEL * self.width - 1))
+        line.set_color(0, 0, 0)
+        self.viewer.add_geom(line)
         # 画障碍
         for o in self.obstacles:
-            pl = self.draw_shape(o)
+            pl = self.draw_shape(o, radius = 0.5)
             self.viewer.add_geom(pl)
         # 起点
         start = self.draw_shape(self.map.start, color = (0, 0, 1), shape = 'circle')
