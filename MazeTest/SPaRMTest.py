@@ -27,32 +27,37 @@ from MultiSource.SPaRM import *
 class SPaRMTest():
     def __init__(self, mode, sources):
         ep = SPaRMname(mode, sources)
-        self.expname = '{} tr{}it{}ts{} {}'.format(ep, train_gap, total_iter, test_gap, get_time(), )
-        self.mode = mode
-        self.sources = sources
+        self.expname = '{} {}_{}_{} {}'.format(ep, total_iter, train_gap, test_gap, get_time())
         #os.makedirs('../img/{}'.format(self.expname))
         print(self.expname, 'begin')
 
         self.env = UnrenderedMaze()
         if mode == 2:
-            self.mergetime = datetime.timedelta(0)
-            self.exploretime = datetime.timedelta(0)
+            self.wallclock_expand = 0
+            self.wallclock_inner = 0
+            self.episodes_expand = 0
+            self.episodes_inner = 0
             self.agent = QLearningTable(actions=self.env.action_space, e_greedy=0.9)
         elif mode == 1:
             msse = SpacePartition(sources = sources, expname = self.expname)
-            self.mergetime = msse.merge()
-            self.exploretime = msse.inner_train()
+            msse.Exploration()
             self.agent = msse.finalsource.agent
+
+            self.wallclock_expand = msse.wallclock_expand
+            self.wallclock_inner = msse.wallclock_inner
+            self.episodes_expand = msse.episodes_expand
+            self.episodes_inner = msse.episodes_inner
         else:
             msse = SPaRM(sources = sources, expname = self.expname)
-            msse.merge()
-            self.mergetime = msse.mergetime
-            self.exploretime = msse.exploretime
+            msse.Exploration()
             self.agent = msse.finalsource.agent
 
-        self.endpoints = np.zeros((self.env.height + 2, self.env.width + 2), dtype = int)
+            self.wallclock_expand = msse.wallclock_expand
+            self.wallclock_inner = msse.wallclock_inner
+            self.episodes_expand = msse.episodes_expand
+            self.episodes_inner = msse.episodes_inner
 
-    def core(self, test_gap, train_gap, total_iter):
+    def Planning(self, test_gap, train_gap, total_iter):
         test_rate = [] # 成功率
         test_len = [] # 平均长度
         test_reward = []
@@ -60,52 +65,59 @@ class SPaRMTest():
         train_len = []
         train_reward = []
 
-        self.train_info = '0 {} /\n'.format(get_time())
-        stime = datetime.datetime.now()
         cvgtime = None
-
+        cvgiter = 0
+        stime = datetime.datetime.now()
+        # 进行total_iter次迭代
         for i in range(1, 1 + total_iter):
-            train, re = self.Batch(isTrain = True, gap = train_gap)
-            train_rate.append(len(train) / train_gap)
-            arvlen = sum(train) / len(train) if len(train) > 0 else 0
-            train_len.append(arvlen)
-            train_reward.append(sum(re) / len(re))
-
-            test, re = self.Batch(isTrain = False, gap = test_gap)
-            trate = len(test) / test_gap
-            test_rate.append(trate)
-            if trate < 1.0:
+            # 先训练train_gap个episodes
+            avg_len, avg_succ, avg_reward = self.Batch(isTrain = True, gap = train_gap)
+            train_rate.append(avg_succ)
+            train_len.append(avg_len)
+            train_reward.append(avg_reward)
+            # 再评估test_gap个episodes
+            avg_len, avg_suc, avg_reward = self.Batch(isTrain = False, gap = test_gap)
+            test_rate.append(avg_suc)
+            test_len.append(avg_len)
+            test_reward.append(avg_reward)
+            if avg_suc < 1.0:
                 cvgtime = None
+                cvgiter = 0
             elif cvgtime is None:
                 cvgtime = datetime.datetime.now()
-            arvlen = sum(test) / len(test) if len(test) > 0 else 0
-            test_len.append(arvlen)
-            test_reward.append(sum(re) / len(re))
+                cvgiter = i
 
             #if i % 10 == 0: # 只是为了看到进度的，有没有都行
-            #    print('iter{} {}, {}'.format(i, get_time(), sum(test_rate) * test_gap))
-            self.train_info = '{}{} {} {}\n'.format(self.train_info, i, get_time(), trate)
+            #    print('iter{} {}, {}'.format(i, get_time(), avg_suc))
         # end of for
-        cvg = (cvgtime - stime) if cvgtime is not None else (stime - stime)
-        train_time = [
-            self.mergetime.total_seconds(),
-            self.exploretime.total_seconds(),
-            cvg.total_seconds(),
-            self.mergetime.total_seconds() + self.exploretime.total_seconds() + cvg.total_seconds(),
-            ]
-        #print(self.endpoints)
+        convergence_time = (cvgtime - stime).total_seconds() if cvgtime is not None else 0
+        etime = datetime.datetime.now()
+        plan_time = (etime - stime).total_seconds()
         #guide_table(self.agent.q_table, self.env.height, self.env.width, '{}/guide'.format(self.expname), cmap='rainbow')
         with open('../img/{}.txt'.format(self.expname), 'w', encoding='utf-8') as f:
+            #暂时不记录长度，但是代码要保留
+            #f.write(','.join([str(round(x, 2)) for x in test_len]) + '\n')
+            #f.write(','.join([str(round(x, 2)) for x in train_len]) + '\n')
             f.write(','.join([str(x) for x in test_rate]) + '\n')
-            f.write(','.join([str(round(x, 2)) for x in test_len]) + '\n')
             f.write(','.join([str(x) for x in train_rate]) + '\n')
-            f.write(','.join([str(round(x, 2)) for x in train_len]) + '\n')
             f.write(','.join([str(round(x, 3)) for x in test_reward]) + '\n')
             f.write(','.join([str(round(x, 3)) for x in train_reward]) + '\n')
-            f.write(train_time)#'train time: {}\n'.format(train_time))
-            f.write(self.train_info)
-        with open('../img/{}.txt'.format(SPaRMname(self.mode, self.sources)), 'a', encoding='utf-8') as f:
-            f.write(','.join([str(round(x, 2)) for x in train_time]) + '\n')
+            f.write('{},{},{}\n'.format(
+                self.wallclock_expand,
+                self.wallclock_inner,
+                convergence_time,
+                self.wallclock_expand + self.wallclock_inner,
+                self.wallclock_expand + self.wallclock_inner + convergence_time,
+                self.wallclock_expand + self.wallclock_inner + plan_time,
+                ))
+            f.write('{},{},{}\n'.format(
+                self.episodes_expand,
+                self.episodes_inner,
+                cvgiter * train_gap,
+                self.episodes_expand + self.episodes_inner,
+                self.episodes_expand + self.episodes_inner + cvgiter * train_gap,
+            ))
+        print(etime, 'end')
 
     def Batch(self, isTrain, gap):
         path_len = [] # 记录成功时的路径长度
@@ -113,10 +125,8 @@ class SPaRMTest():
         for episode in range(1, gap + 1):
             observation = self.env.reset()
             total_reward = 0
-
-            # one trial
-            for _ in range(nnnn):
-            #while True:
+            # one episode
+            for i in range(PLANNING_HORIZON):
                 action = self.agent.choose_action(encode(observation)) if isTrain else self.agent.action(encode(observation))
                 observation_, reward, done, info = self.env.step(action)
                 if isTrain:
@@ -126,29 +136,28 @@ class SPaRMTest():
 
                 self.env.render()
                 if done:
-                    if not isTrain:
-                        self.endpoints[tuple(observation + [1, 1])] += 1
-
                     if info == ARRIVE:
                         length = len(self.env.cur_path)
                         path_len.append(length)
-                        if self.env.new_sln:
-                            self.train_info += "epi-{}{} path:{} {}\n".format('t' if isTrain else 'f', episode, length, '-'.join([str(x) for x in self.env.cur_path]))
+                        #if self.env.new_sln:
+                        #    self.train_info += "{}-episode{} path:{} {}\n".format('train' if isTrain else 'test', i, length, '-'.join([str(x) for x in self.env.cur_path]))
                     break
-            # enf of while(one trial)
+            # enf of (one episode)
             accum_reward.append(total_reward)
-        # enf of for(trial process)
-        return path_len, accum_reward
+        # enf of (one batch)
+        avg_len = sum(path_len) / len(path_len) if len(path_len) > 0 else 0
+        avg_suc = len(path_len) / gap
+        avg_reward = sum(accum_reward) / gap
+        return avg_len, avg_suc, avg_reward
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--testgap', type=int, default=3)
     parser.add_argument('--traingap', type=int, default=200)
-    parser.add_argument('--iter', type=int, default=150)
-    parser.add_argument('--mode', type=int, default=2, help = '0-SPaRM; mode:1-SpacePartition; 2-qlearning;')
-    parser.add_argument('--n', type=int, default=0)
-    parser.add_argument('--nnnn', type=int, default=500)
+    parser.add_argument('--iter', type=int, default=300)
+    parser.add_argument('--mode', type=int, default=0, help = '0-SPaRM; mode:1-SpacePartition; 2-qlearning;')
+    parser.add_argument('--n', type=int, default=1)
     args = parser.parse_args()
 
     test_gap = args.testgap
@@ -156,9 +165,11 @@ if __name__ == '__main__':
     total_iter = args.iter
     mode = args.mode
     n = args.n
-    nnnn = args.nnnn
     msse = SPaRMTest(mode=mode, sources = srcdata[n])
-    msse.core(test_gap, train_gap, total_iter)
+    msse.Planning(test_gap, train_gap, total_iter)
+
+
+
 
 
 

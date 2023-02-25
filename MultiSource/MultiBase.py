@@ -11,12 +11,14 @@ WALK = 'walk'
 MERGE = 'merge'
 FOUND = 'found'
 
+EXPLORATION_HORIZON = 500
+PLANNING_HORIZON = 60
+
 p1 = np.array([15, 14])
 p2 = np.array([15, 8])
 p3 = np.array([10, 7])
 p4 = np.array([12, 5])
 p5 = np.array([8, 2])#比较废的点
-
 
 srcdata = [
     [p1, p3, p5], # 0
@@ -26,7 +28,7 @@ srcdata = [
     [p1, p2],
     [p1, p4],
     [p1, p3],
-    [p1],
+    [p1], # 7
     [p2],
     [p3],
     [p4],
@@ -67,7 +69,6 @@ class MultiBase(UnrenderedMaze):
         self.start = self.map.start
         self.mode = mode
         self.expname = expname
-        self.jumpgap = 500 if mode == 0 else 500
         self.finalsource = None
         self.exploretime = datetime.timedelta(seconds = 0)
         self.mergetime = datetime.timedelta(seconds = 0)

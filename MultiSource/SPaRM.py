@@ -11,13 +11,18 @@ class SPaRM(MultiBase):
         MultiBase.__init__(self, sources = sources, expname = expname)
         self.finalsource = Source(self.destination, isend = True)
 
-    def merge(self):
-        stime = datetime.datetime.now()
+    def Exploration(self):
         for src in self.srcs:
+            srctime = datetime.datetime.now()
             while not self.walk(src):
                 continue
-        self.mergetime += datetime.datetime.now() - stime - self.exploretime
-        print(self.mergetime, self.exploretime)
+            src.expand_episodes = src.inner_episodes
+            src.inner_episodes = self.finalsource.inner_episodes
+            src.expand_time = datetime.datetime.now() - srctime -src.inner_time
+        self.wallclock_expand = sum([x.expand_time.total_seconds() for x in self.srcs])
+        self.wallclock_inner = sum([x.inner_time.total_seconds() for x in self.srcs])
+        self.episodes_expand = sum([x.expand_episodes for x in self.srcs])
+        self.episodes_inner = sum([x.inner_episodes for x in self.srcs])
         #self.display_all()
 
     def walk(self, src : Source, inner = False):
@@ -25,21 +30,24 @@ class SPaRM(MultiBase):
         reward, done, info, next = super().step(src, action, inner)
         src.agent.learn(encode(src.cur), action, reward, encode(next), done)
 
-        src.steps = (1 + src.steps) % self.jumpgap
+        src.steps = (1 + src.steps) % EXPLORATION_HORIZON
         src.cur = next
         self.move_block(src, next)
 
         # 是否发生合并，或者抵达终点
         if info == WALK:# 尝试和finalsource合并
             if self.trymerge(src, next):
+                src.inner_episodes += 1
                 return True
         elif info == ARRIVE or info == FOUND:
             self.trymerge(src, next)
+            src.inner_episodes += 1
             return True
 
-        # 碰撞（出界）或者满jumpgap步，随机跳
-        if done or src.steps == 0: # 碰撞（出界），但没抵达终点。这些情况下随机跳
+        # 碰撞（出界）或者满EXPLORATION_HORIZON步，结束episode
+        if done or src.steps == 0:
             src.cur = src.start
+            src.inner_episodes += 1
             self.move_block(src, src.cur)
 
         return False
@@ -61,18 +69,20 @@ class SPaRM(MultiBase):
         self.finalsource.points += src.points
         self.finalsource.start = src.start
         self.finalsource.steps = 0
+        self.finalsource.inner_episodes = 0
         # 合并qtable
         self.finalsource.agent.q_table = self.merge_qtable(self.finalsource.agent.q_table, src.agent.q_table)
 
         #self.display()
-        self.inner_explore(self.finalsource)
+        innertime = self.inner_explore(self.finalsource)
+        src.inner_time = innertime
         return True
 
     def inner_explore(self, src : Source):
         stime = datetime.datetime.now()
         while not self.walk(src, True):
             continue
-        self.exploretime += datetime.datetime.now() - stime
+        return datetime.datetime.now() - stime
 
     def merge_qtable(self, eater, droper):
         its = list(set(eater.index).intersection(set(droper.index)))

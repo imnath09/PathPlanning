@@ -1,4 +1,4 @@
-
+import datetime
 from Algorithm.QLearning import *
 
 class Source():
@@ -13,6 +13,10 @@ class Source():
         self.steps = 0
         self.agent = QLearningTable(actions = range(4), e_greedy = 0.9)
         #self.ragent = QLearningTable(actions = range(4), e_greedy= 0.9)
+        self.expand_time = datetime.timedelta(seconds = 0)
+        self.inner_time = datetime.timedelta(seconds = 0)
+        self.expand_episodes = 0
+        self.inner_episodes = 0
 
     def tryappend(self, pos):
         if not self.contain(pos):

@@ -5,10 +5,10 @@ import sys
 sys.path.append('..')
 from MultiSource.MultiBase import srcdata
 
-# 记得执行脚本之前也要加nohup
+# 记得执行脚本之前Batch.py也要加nohup
 
 
-cmd = 'nohup python SPaRMTest.py --mode {} --n {} --traingap 200 --iter 150 --testgap 3 >>../img/train.log 2>&1 &'
+cmd = 'nohup python SPaRMTest.py --mode {} --n {} --traingap 200 --iter 400 --testgap 3 >>../img/train.log 2>&1 &'
 
 
 
