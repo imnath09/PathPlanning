@@ -102,7 +102,8 @@ class SPaRMTest():
             f.write(','.join([str(x) for x in train_rate]) + '\n')
             f.write(','.join([str(round(x, 3)) for x in test_reward]) + '\n')
             f.write(','.join([str(round(x, 3)) for x in train_reward]) + '\n')
-            f.write('{},{},{}\n'.format(
+            #f.write('{},{},{}\n'.format(
+            f.write('{},{},{},{},{},{}\n'.format(
                 self.wallclock_expand,
                 self.wallclock_inner,
                 convergence_time,
@@ -110,7 +111,7 @@ class SPaRMTest():
                 self.wallclock_expand + self.wallclock_inner + convergence_time,
                 self.wallclock_expand + self.wallclock_inner + plan_time,
                 ))
-            f.write('{},{},{}\n'.format(
+            f.write('{},{},{},{},{}\n'.format(
                 self.episodes_expand,
                 self.episodes_inner,
                 cvgiter * train_gap,

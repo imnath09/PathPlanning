@@ -11,11 +11,6 @@ OUT = 'out of bound'
 CRASH = 'collision'
 ARRIVE = 'arrive'
 
-ARRIVE_REWARD = 2.0
-CRASH_REWARD = -1.0
-STEP_REWARD = -0.001
-MERGE_REWARD = 0
-
 END_IF_OUT = False # 出界时是否结束训练
 END_IF_CRASH = True # 碰撞时是否结束训练
 
@@ -48,6 +43,11 @@ class UnrenderedMaze():
         self.height = self.map.height
         self.width = self.map.width
 
+        self.ARRIVE_REWARD = 2.0
+        self.CRASH_REWARD = -1.0
+        self.STEP_REWARD = -0.001
+        self.MERGE_REWARD = 0
+
         #print(REWARD)
 
     def reset(self):
@@ -65,7 +65,7 @@ class UnrenderedMaze():
             next[1] < 0 or
             next[0] >= self.height or
             next[1] >= self.width):
-            reward = CRASH_REWARD
+            reward = self.CRASH_REWARD
             done = END_IF_OUT # 出界是否结束
             #print(OUT)
             if not END_IF_OUT:
@@ -73,14 +73,14 @@ class UnrenderedMaze():
             info = OUT
         # 碰撞
         elif any((next == x).all() for x in self.obstacles):
-            reward = CRASH_REWARD
+            reward = self.CRASH_REWARD
             done = END_IF_CRASH # 碰撞是否结束
             if not END_IF_CRASH:
                 next = self.walker
             info = CRASH
         # 抵达终点
         elif (next == self.map.destination).all():
-            reward = ARRIVE_REWARD
+            reward = self.ARRIVE_REWARD
             #print('daoda{}'.format(reward))
             done = True
             info = ARRIVE
@@ -118,7 +118,7 @@ class UnrenderedMaze():
                 cosine = (a2 + b2 - c2) / (2 * (a2 * b2)**0.5)
             reward = cosine - math.log(len(self.cur_path), 100)
             '''
-            reward = STEP_REWARD#REWARD[tuple(next)]#
+            reward = self.STEP_REWARD#REWARD[tuple(next)]#
             #print('cos=', cosine)
 
             done = False

@@ -48,6 +48,7 @@ def read_file(fname):
         )
         wall_e, wall_i, wall_c = [float(x) for x in lines[4].split(',')][0: 3]
         episode_e, episode_i, episode_c = [int(x) for x in lines[5].split(',')][0:3]
+        #episode_c *= 200
 
     return [[test_rate, train_rate, test_rewards, train_rewards],
             [wall_e, wall_i, wall_c],
@@ -107,12 +108,16 @@ def confidence_Interval(data):
         y1.append(avr - z)
     return xr, m, y1, y2
 
-def draw_a_bar(x, heights,yerrs,labels,title,iname):
+def draw_a_bar(x, heights,yerrs,labels,title,iname,xlim=None,ylim=None):
     plt.figure(figsize=fsize)
     plt.suptitle(title)
     for i in range(len(heights)):
         plt.bar(x, height=heights[i],yerr=yerrs[i],color=scolors[i],width=0.5,label=labels[i])
     plt.xticks(ha='right',rotation=45)
+    if xlim is not None:
+        plt.xlim(xlim[0], xlim[1])
+    if ylim is not None:
+        plt.ylim(ylim[0], ylim[1])
     plt.legend()
     plt.tight_layout()
     plt.savefig(iname)
@@ -183,6 +188,7 @@ def DrawConfidences(fileDicts, index, title):
         plt.plot(xr, m, color=colors[i], label=exp_name)
         i += 1
     plt.legend()
+    plt.tight_layout()
     plt.savefig('../img/3{} confidences.png'.format(title))
     plt.close()
     print('confidence finish')
@@ -196,11 +202,11 @@ def DrawBar(exp_name, files):
        np.array(episode_es)+np.array(episode_is),
        episode_es]
     e=[None,None,None]
-    draw_a_bar(x,heights=d,yerrs=e,labels=['cvg','merge','expand'],title=exp_name,iname='../img/4{}episode.png'.format(exp_name))
+    draw_a_bar(x,heights=d,yerrs=e,labels=['cvg','merge','expand'],title=exp_name,iname='../img/4{}episode.png'.format(exp_name),ylim=(0, 65000))
     d=[np.array(wall_es)+np.array(wall_is)+np.array(wall_cs),
        np.array(wall_es)+np.array(wall_is),
        wall_es]
-    draw_a_bar(x,heights=d,yerrs=e,labels=['cvg','merge','expand'],title=exp_name,iname='../img/4{}wallclock.png'.format(exp_name))
+    draw_a_bar(x,heights=d,yerrs=e,labels=['cvg','merge','expand'],title=exp_name,iname='../img/4{}wallclock.png'.format(exp_name),ylim=(0,3000))
     print('bar finish')
 
 def DrawErrorBar(fileDicts : dict, index, title):

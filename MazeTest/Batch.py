@@ -9,6 +9,7 @@ from MultiSource.MultiBase import srcdata
 
 
 cmd = 'nohup python SPaRMTest.py --mode {} --n {} --traingap 200 --iter 400 --testgap 3 >>../img/train.log 2>&1 &'
+#cmd = 'python SPaRMTest.py --mode {} --n {} --traingap 200 --iter 400 --testgap 3 '
 
 
 
@@ -44,6 +45,6 @@ for _ in range(20):
         c = cmd.format(m[0], m[1])
         os.system(c)'''
     time.sleep(1200)
-
+#os.system('shutdown -s -t 60')
 
 

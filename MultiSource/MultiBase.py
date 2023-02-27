@@ -128,14 +128,14 @@ class MultiBase(UnrenderedMaze):
             ) or (
                 inner and not src.contain(next)
             ):
-            reward = CRASH_REWARD
+            reward = self.CRASH_REWARD
             done = END_IF_OUT # 出界是否结束
             if not END_IF_OUT:
                 next = src.cur # 出界结束就随机跳，否则回退
             info = OUT
         # 碰撞
         elif any((next == x).all() for x in self.obstacles):
-            reward = CRASH_REWARD
+            reward = self.CRASH_REWARD
             done = END_IF_CRASH # 碰撞是否结束
             if not END_IF_CRASH:
                 next = src.cur
@@ -144,19 +144,19 @@ class MultiBase(UnrenderedMaze):
         elif (next == self.destination).all():
             src.end = next
             src.isend = True
-            reward = ARRIVE_REWARD
+            reward = self.ARRIVE_REWARD
             done = True
             info = FOUND if src.isstart else ARRIVE
         # 抵达源内部终点
         elif (next == src.end).all():
-            reward = MERGE_REWARD
+            reward = self.MERGE_REWARD
             done = False
             info = ARRIVE
         # 正常移动
         else:# 
             done = False
             info = WALK
-            reward = STEP_REWARD
+            reward = self.STEP_REWARD
 
         return reward, done, info, next
 
