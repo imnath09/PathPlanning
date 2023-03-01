@@ -41,8 +41,10 @@ def SPaRMname(mode, srcs):
     info = '_'.join(['{}{}'.format(x[0], x[1]) for x in srcs])
     if mode == 1:
         return 'SP{}_{}'.format(len(srcs) + 1, info)
-    else:#0
+    elif mode == 0:
         return 'SPaRM{}_{}'.format(len(srcs) + 1, info)
+    elif mode == 3:
+        return 'RFE'
 
 def SPaSEname(mode, srcs):
     if mode == 0 and len(srcs) == 0:

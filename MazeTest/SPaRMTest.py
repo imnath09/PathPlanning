@@ -5,6 +5,7 @@ sys.path.append('..')
 
 from MultiSource.SpacePartition import *
 from MultiSource.SPaRM import *
+from MultiSource.RFE import *
 
 '''
 1.qlearning，Qlearning
@@ -38,17 +39,14 @@ class SPaRMTest():
             self.episodes_expand = 0
             self.episodes_inner = 0
             self.agent = QLearningTable(actions=self.env.action_space, e_greedy=0.9)
-        elif mode == 1:
-            msse = SpacePartition(sources = sources, expname = self.expname)
-            msse.Exploration()
-            self.agent = msse.finalsource.agent
-
-            self.wallclock_expand = msse.wallclock_expand
-            self.wallclock_inner = msse.wallclock_inner
-            self.episodes_expand = msse.episodes_expand
-            self.episodes_inner = msse.episodes_inner
         else:
-            msse = SPaRM(sources = sources, expname = self.expname)
+            if mode == 1:
+                msse = SpacePartition(sources = sources, expname = self.expname)
+            elif mode == 0:
+                msse = SPaRM(sources = sources, expname = self.expname)
+            elif mode == 3:
+                msse = RFE(expname = self.expname)
+
             msse.Exploration()
             self.agent = msse.finalsource.agent
 
@@ -157,7 +155,9 @@ if __name__ == '__main__':
     parser.add_argument('--testgap', type=int, default=3)
     parser.add_argument('--traingap', type=int, default=200)
     parser.add_argument('--iter', type=int, default=300)
-    parser.add_argument('--mode', type=int, default=0, help = '0-SPaRM; mode:1-SpacePartition; 2-qlearning;')
+    parser.add_argument('--mode', type=int, default=0,
+                        help = '0-SPaRM; mode:1-SpacePartition;\
+                            2-qlearning; 3-RFE')
     parser.add_argument('--n', type=int, default=1)
     args = parser.parse_args()
 
