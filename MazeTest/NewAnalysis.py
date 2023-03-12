@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
 
-fsize = (18, 9)
+fsize = (12, 9)
 linestyle1= ['-', '--', '-.', ':',]
 linestyles = ['-']*4
 SOME_COLORS = {
@@ -108,21 +108,6 @@ def confidence_Interval(data):
         y1.append(avr - z)
     return xr, m, y1, y2
 
-def draw_a_bar(x, heights,yerrs,labels,title,iname,xlim=None,ylim=None):
-    plt.figure(figsize=fsize)
-    plt.suptitle(title)
-    for i in range(len(heights)):
-        plt.bar(x, height=heights[i],yerr=yerrs[i],color=scolors[i],width=0.5,label=labels[i])
-    plt.xticks(ha='right',rotation=45)
-    if xlim is not None:
-        plt.xlim(xlim[0], xlim[1])
-    if ylim is not None:
-        plt.ylim(ylim[0], ylim[1])
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(iname)
-    plt.close()
-
 def draw_curves(title, datas, colors, labels, savename, linestyles = linestyle1):
     '''把一堆实验曲线画在一个图里'''
     al = 0.7
@@ -141,37 +126,35 @@ def draw_curves(title, datas, colors, labels, savename, linestyles = linestyle1)
     #plt.ylim(-0.05, 0.9)
     plt.grid(visible=True,axis='x')
     plt.legend()
-    plt.tight_layout()
+    #plt.tight_layout()
     plt.savefig(savename)
     plt.close()
 
-
-def DrawEveryExperimentCurve(exp_name, files):
+def DrawEveryExperimentCurve(fileDicts : dict):
     '''比较某一【类】实验(比如SPARM4_**)的六个数据'''
-    #get_color = lambda : "#" + "%06x" % random.randint(0, 0xFFFFFF)
-    get_colors = lambda n: list(map(lambda i: "#" + "%06x" % random.randint(0, 0xFFFFFF),range(n)))
-    colors = get_colors(len(files))
+    for exp_name, files in fileDicts.items():
+        #get_color = lambda : "#" + "%06x" % random.randint(0, 0xFFFFFF)
+        get_colors = lambda n: list(map(lambda i: "#" + "%06x" % random.randint(0, 0xFFFFFF),range(n)))
+        colors = get_colors(len(files))
+        #colors = list(SOME_COLORS.values())
+        [[test_rates, train_rates, test_rewards, train_rewards],
+         [wall_es, wall_is, wall_cs],
+         [episode_es, episode_is, episode_cs]] = get_data(files)
+        # 测试成功率
+        draw_curves('test_rate', test_rates, colors, files, '../img/{}_test_rate.png'.format(exp_name))
+        # 训练成功率
+        draw_curves('train_rate', train_rates, colors, files, '../img/{}_train_rate.png'.format(exp_name))
+        # 测试奖励
+        draw_curves('test_rewards', test_rewards, colors, files, '../img/{}_test_rewards.png'.format(exp_name))
+        # 训练奖励
+        draw_curves('train_rewards', train_rewards, colors, files, '../img/{}_train_rewards.png'.format(exp_name))
+        # 平均测试累积奖励
+        #draw('test reward', wallclock, colors, files, '../img/{}_wallclock.png'.format(exp_name))
+        # 平均训练累积奖励
+        #draw('train reward', episodes, colors, files, '../img/{}_episodes.png'.format(exp_name))
+        print('curve finish')
 
-    [[test_rates, train_rates, test_rewards, train_rewards],
-     [wall_es, wall_is, wall_cs],
-     [episode_es, episode_is, episode_cs]] = get_data(files)
-    # 测试成功率
-    draw_curves('test_rate', test_rates, colors, files, '../img/{}_test_rate.png'.format(exp_name))
-    # 训练成功率
-    draw_curves('train_rate', train_rates, colors, files, '../img/{}_train_rate.png'.format(exp_name))
-    # 测试奖励
-    draw_curves('test_rewards', test_rewards, colors, files, '../img/{}_test_rewards.png'.format(exp_name))
-    # 训练奖励
-    draw_curves('train_rewards', train_rewards, colors, files, '../img/{}_train_rewards.png'.format(exp_name))
-    # 平均测试累积奖励
-    #draw('test reward', wallclock, colors, files, '../img/{}_wallclock.png'.format(exp_name))
-    # 平均训练累积奖励
-    #draw('train reward', episodes, colors, files, '../img/{}_episodes.png'.format(exp_name))
-    print('curve finish')
-
-def DrawConfidences(fileDicts, index, title):
-    get_colors = lambda n: list(map(lambda i: "#" + "%06x" % random.randint(0, 0xFFFFFF),range(n)))
-    colors = get_colors(len(fileDicts))
+def DrawConfidences(fileDicts : dict, index, title):
     colors = list(SOME_COLORS.values())
     i = 0
     plt.figure(figsize=fsize)
@@ -198,23 +181,25 @@ def DrawConfidences(fileDicts, index, title):
     plt.close()
     print('confidence finish')
 
-def DrawBar(exp_name, files):
-    [[test_rates, train_rates, test_rewards, train_rewards],
-     [wall_es, wall_is, wall_cs],
-     [episode_es, episode_is, episode_cs]] = get_data(files)
-    x = files
-    d=[np.array(episode_es)+np.array(episode_is)+np.array(episode_cs),
-       np.array(episode_es)+np.array(episode_is),
-       episode_es]
-    e=[None,None,None]
-    draw_a_bar(x,heights=d,yerrs=e,labels=['cvg','merge','expand'],title=exp_name,iname='../img/4{}episode.png'.format(exp_name))#,ylim=(0, 65000))
-    d=[np.array(wall_es)+np.array(wall_is)+np.array(wall_cs),
-       np.array(wall_es)+np.array(wall_is),
-       wall_es]
-    draw_a_bar(x,heights=d,yerrs=e,labels=['cvg','merge','expand'],title=exp_name,iname='../img/4{}wallclock.png'.format(exp_name))#,ylim=(0,3000))
-    print('bar finish')
+def DrawBar(fileDicts : dict):
+    for exp_name, files in fileDicts.items():
+        #DrawBar(exp_name, files)
+        [[test_rates, train_rates, test_rewards, train_rewards],
+         [wall_es, wall_is, wall_cs],
+         [episode_es, episode_is, episode_cs]] = get_data(files)
+        x = files
+        d=[np.array(episode_es)+np.array(episode_is)+np.array(episode_cs),
+           np.array(episode_es)+np.array(episode_is),
+           episode_es]
+        e=[None,None,None]
+        draw_a_bar(x,heights=d,yerrs=e,labels=['cvg','merge','expand'],title=exp_name,iname='../img/4{}episode.png'.format(exp_name))#,ylim=(0, 65000))
+        d=[np.array(wall_es)+np.array(wall_is)+np.array(wall_cs),
+           np.array(wall_es)+np.array(wall_is),
+           wall_es]
+        draw_a_bar(x,heights=d,yerrs=e,labels=['cvg','merge','expand'],title=exp_name,iname='../img/4{}wallclock.png'.format(exp_name))#,ylim=(0,3000))
+        print('bar finish')
 
-def DrawErrorBar(fileDicts : dict, index, title):
+def DrawMainData(fileDicts : dict, index, title):
     xticks=[]
     mean_e,err_e,expand=[],[],[]#expand
     mean_i,err_i,inner=[],[],[]#inner
@@ -250,20 +235,41 @@ def DrawErrorBar(fileDicts : dict, index, title):
 
         xticks.append(exp_name)
     #print(xticks)
+    #print('merge', title, mean_m, err_m)
+    #print('total',title,mean_t,err_t)
     #draw_a_bar(xticks,[mean_c],[err_c],['convergence'],title,'../img/1errorbar {} cvg.png'.format(title))
     #draw_a_bar(xticks,[mean_i],[err_i],['inner'],title,'../img/1errorbar {} inner.png'.format(title))
     #draw_a_bar(xticks,[mean_e],[err_e],['expand'],title,'../img/1errorbar {} expand.png'.format(title))
     draw_a_bar(xticks,[mean_m],[err_m],['merge'],title,'../img/1errorbar {} merge.png'.format(title))
-    #print('merge', title, mean_m, err_m)
     draw_a_bar(xticks,[mean_t],[err_t],['total'],title,'../img/1errorbar {} total.png'.format(title))
-    #print('total',title,mean_t,err_t)
     #draw_a_bar(xticks,[mean_t,'mean_m'],[err_t,'err_m'],['total','merge'],title,'../img/1errorbar {} total.png'.format(title))
-    #print(title, xticks, mean_t)
     #draw_box(xticks,expand,'../img/2box {} expand.png'.format(title))
     #draw_box(xticks,inner,'../img/2box {} inner.png'.format(title))
     #draw_box(xticks,cvg,'../img/2box {} cvg.png'.format(title))
-    #draw_box(xticks,merge,'../img/2box {} merge.png'.format(title))
-    #draw_box(xticks,total,'../img/2box {} total.png'.format(title))
+    draw_box(xticks,merge,'../img/2box {} merge.png'.format(title))
+    draw_box(xticks,total,'../img/2box {} total.png'.format(title))
+    #draw_scatter(xticks, expand, mean_e, '../img/2box {} expand1.png'.format(title))
+    #draw_scatter(xticks, inner, mean_i, '../img/2box {} inner1.png'.format(title))
+    #draw_scatter(xticks, cvg, mean_c, '../img/2box {} cvg1.png'.format(title))
+    draw_scatter(xticks, merge, mean_m, '../img/2box {} merge1.png'.format(title))
+    draw_scatter(xticks, total, mean_t, '../img/2box {} total1.png'.format(title))
+
+def draw_scatter(xticks, data, means, fname):
+    plt.figure(figsize=fsize)
+    r = range(len(xticks))
+    for i in r:
+        plt.scatter(
+            x=[i] * len(data[i]), y=data[i], marker='+',
+            #s=abs(scattersiize * r), c=r, edgecolors='black', cmap='bwr', vmin=-1.0, vmax=1.0, linewidths=0.4
+            )
+        plt.scatter(
+            x=i, y=means[i], marker='o', c='r', s=40
+        )
+    plt.xticks(rotation=45, ticks=r, labels=xticks, ha='right')
+    #plt.ylim([0, 1800])
+    plt.tight_layout()
+    plt.savefig(fname)
+    plt.close()
 
 def draw_box(labels,x,fname):
     plt.figure(figsize=fsize)
@@ -273,7 +279,7 @@ def draw_box(labels,x,fname):
         showmeans=True,
         meanline=True,
         patch_artist=False,
-        widths=0.4,
+        widths=0.1,
         #boxprops={'color':'blue',},#设置箱体属性，填充色和边框色
         flierprops={'marker':'+','markerfacecolor':'#9999ff'},#设置异常值属性，点的形状、填充颜色和边框色
         meanprops={'linestyle':'dotted','color':'red'},#设置均值点的属性，点的颜色和形状
@@ -282,20 +288,36 @@ def draw_box(labels,x,fname):
         whis=0.8,
         )
     plt.xticks(rotation = 45, horizontalalignment = 'right')
-    plt.grid(visible=True,axis='y')
+    #plt.ylim([0, 1800])
+    #plt.grid(visible=True,axis='y')
     plt.tight_layout()
     plt.savefig(fname)
+    plt.close()
+
+def draw_a_bar(x, heights,yerrs,labels,title,iname,xlim=None,ylim=None):
+    plt.figure(figsize=fsize)
+    plt.suptitle(title)
+    for i in range(len(heights)):
+        plt.bar(x, height=heights[i],yerr=yerrs[i],color=scolors[i],width=0.5,label=labels[i])
+    plt.xticks(ha='right',rotation=45)
+    if xlim is not None:
+        plt.xlim(xlim[0], xlim[1])
+    if ylim is not None:
+        plt.ylim(ylim[0], ylim[1])
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(iname)
     plt.close()
 
 if __name__ == '__main__':
     dir = '../img/'
     fileDict = get_file_dict(dir)
-    DrawErrorBar(fileDict,1,'wallclock')#画挂钟时间置信区间
-    DrawErrorBar(fileDict,2,'episode')#画幕置信区间
-    DrawConfidences(fileDict, 3, 'test_rewards')#画奖励曲线
-    #for exp_name, files in fileDict.items():
-    #    DrawEveryExperimentCurve(exp_name, files)#画实验曲线
-    #    DrawBar(exp_name, files)#
+    DrawMainData(fileDict,1,'wallclock')#画挂钟时间置信区间
+    DrawMainData(fileDict,2,'episode')#画幕置信区间
+    DrawConfidences(fileDict, 3, 'train_rewards')#画奖励曲线
+    DrawConfidences(fileDict, 1, 'train_rate')#画奖励曲线
+    #DrawBar(fileDict)
+    #DrawEveryExperimentCurve(fileDict)#画实验曲线
 
     '''en='SPaRM4_1514_158_125'
     fs=fileDict[en]
