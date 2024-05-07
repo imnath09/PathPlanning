@@ -19,6 +19,7 @@ class SpacePartition(MultiBase):
                     ss = src # src包含起始点
                     break
                 elif bMerge:
+                    time.sleep(10)
                     break
         self.wallclock_expand = (datetime.datetime.now() - stime).total_seconds()
         self.episodes_expand = sum([x.expand_episodes for x in self.srcs])
@@ -143,7 +144,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     n = args.n
 
-    SpacePartition(srcdata[n]).Exploration()
+    SpacePartition(srcdata[0]).Exploration()
 
     #test(srcdata[n])
     #STEP_REWARD = -0.01

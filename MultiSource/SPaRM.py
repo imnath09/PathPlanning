@@ -19,6 +19,7 @@ class SPaRM(MultiBase):
             src.expand_episodes = src.inner_episodes
             src.inner_episodes = self.finalsource.inner_episodes
             src.expand_time = datetime.datetime.now() - srctime -src.inner_time
+            time.sleep(10)
         self.wallclock_expand = sum([x.expand_time.total_seconds() for x in self.srcs])
         self.wallclock_inner = sum([x.inner_time.total_seconds() for x in self.srcs])
         self.episodes_expand = sum([x.expand_episodes for x in self.srcs])
@@ -73,7 +74,7 @@ class SPaRM(MultiBase):
         # 合并qtable
         self.finalsource.agent.q_table = self.merge_qtable(self.finalsource.agent.q_table, src.agent.q_table)
 
-        #self.display()
+        #self.display(src)
         innertime = self.inner_explore(self.finalsource)
         src.inner_time = innertime
         return True
@@ -109,6 +110,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     mode = args.mode
     n = args.n
+
+    rm = SPaRM(sources=srcdata[1],)
+    rm.Exploration()
 
     #test1(srcdata[n], mode)
     #STEP_REWARD = -0.01

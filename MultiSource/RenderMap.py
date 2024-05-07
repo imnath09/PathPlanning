@@ -14,7 +14,7 @@ from gym.envs.classic_control import rendering
 
 PIXEL = 30
 
-class RenderMap(gym.Env, SPaRM):
+class RenderMap(gym.Env, SpacePartition):
     def __init__(self, sources = None, mode = 0, expname = ''):
         gym.Env.__init__(self)
         super().__init__(sources, mode, expname)
@@ -24,6 +24,7 @@ class RenderMap(gym.Env, SPaRM):
         self.viewer = rendering.Viewer(self.height * PIXEL, self.width * PIXEL)
 
         # 画线
+        '''
         for i in range(self.width + 1):
             line = rendering.Line((0, PIXEL * i), (PIXEL * self.height, PIXEL * i))
             line.set_color(0, 0, 0)
@@ -32,24 +33,31 @@ class RenderMap(gym.Env, SPaRM):
             line = rendering.Line((PIXEL * i, 0), (PIXEL * i, PIXEL * self.width))
             line.set_color(0, 0, 0)
             self.viewer.add_geom(line)
-
+        '''
         # 画障碍
         for o in self.obstacles:
-            pl = self.draw_shape(o)
-
-        # 画起点终点
-        st = self.draw_shape(self.start, color = (1, 0, 0), shape = 'circle', radius = 0.4)
-        ed = self.draw_shape(self.destination, color = (1, 1, 0), shape = 'circle', radius = 0.4)
+            pl = self.draw_shape(o, radius=0.5)
 
         # 移动点
+        aaa=[np.array([0.5,0.2,0.1]),
+             np.array([0.9,0.7,0.3]),
+             np.array([0.2,0.6,0.9]),
+             np.array([0.1,0.9,0.1]),
+             np.array([0.1,0.9,0.1]),
+             np.array([0.1,0.9,0.1]),
+             np.array([0.1,0.9,0.1]),
+             ]
+        i = 0
         self.colors = {}
         self.sources = {}
         ss = self.srcs+[self.finalsource] if self.finalsource is not None else self.srcs
         for src in ss:
-            # 起始点
-            t = self.draw_shape(src.cur, color = (0, 0, 1), shape = 'circle', radius = 0.3)
             # 随机颜色
-            color = np.array([np.random.random(), np.random.random(), np.random.random()])
+            color = aaa[i]
+            i += 1
+            #color = np.array([np.random.random(), np.random.random(), np.random.random()])
+            # 起始点
+            t = self.draw_shape(src.cur, color = color, radius = 0.5) # shape = 'circle', 
             self.colors[src] = color
             # 反差颜色
             opscolor = (1, 1, 1) - color
@@ -57,16 +65,22 @@ class RenderMap(gym.Env, SPaRM):
             tr = rendering.Transform()
             p = (src.cur + (0.5, 0.5)) * PIXEL
             tr.set_translation(p[0], p[1])
-            agt = self.draw_shape(
+            '''agt = self.draw_shape(
                 src.cur, trans = tr, color = opscolor, 
-                shape = 'circle', radius = 0.4)
+                shape = 'circle', radius = 0.4)'''
             self.sources[src] = tr
+
+        # 画起点终点
+        st = self.draw_shape(self.start, color = (0.5, 0, 0), radius = 0.5) # , shape = 'circle'
+        st = self.draw_shape(self.start, color = (1, 0, 0), radius = 0.4)
+        ed = self.draw_shape(self.destination, color = (0, 0, 0.5), radius = 0.5)
+        ed = self.draw_shape(self.destination, color = (0, 0, 1),  radius = 0.4)
 
         self.viewer.render()
 
     def add_block(self, src, pos):
         color = self.colors[src]
-        p = self.draw_shape(pos, color = color, radius = 0.2)
+        p = self.draw_shape(pos, color = color, radius = 0.5)
         self.viewer.render()
         #time.sleep(0.1)
 
@@ -94,9 +108,9 @@ class RenderMap(gym.Env, SPaRM):
 
 if __name__ == '__main__':
     mode = 1
-    n = 1
+    n = 2
     src = srcdata[n]
     name = SPaSEname(mode, src)
     rm = RenderMap(src, mode, name)
-    print(rm.merge())
+    print(rm.Exploration())
     input('press any key to exit')

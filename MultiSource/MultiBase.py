@@ -31,11 +31,11 @@ srcdata = [
     [p1, p2],
     [p1, p4],
     [p1, p3],
-    [p1], # 8
+    [p1], # 10
     [p2],
     [p3],
     [p4],
-    [], # 12
+    [], # 14
 ]
 
 def SPaRMname(mode, srcs):
